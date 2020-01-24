@@ -1,18 +1,56 @@
 <!DOCTYPE html>
+<html lang="en">
 
-<html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>my-first-website</title>
-  <LINK href="styles.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8>">
+    <title>hipe4ml</title>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <meta http-equiv="X-UA-Compatible" content:="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
 
 <body>
+    <header class="header clearfix">
+        </a>
+        <ul class="header__menu animate">
+            <li class="header__menu__item">
+                <a href="https://github.com/hipe4ml/hipe4ml"><img src="./GitHub-Logo.png" alt="Fork me on GitHub" width=30px></a>
+            </li>
+        </ul>
+    </header>
 
-<img src="https://octodex.github.com/images/daftpunktocat-thomas.gif" id="octocat" alt="octocat-gif" />
+    <section class="cover">
+      <!-- <div class="cover__filter"></div> -->
+      <div class="cover__caption">
+        <div class="cover__caption__copy">
+            <code><a href="https://hipe4ml.github.io/hipe4ml/index.html" class="button">Reference</a></code>
+            <code><a href="" class="button">Docs</a></code>
+        </div>
+      </div>
+    </section>
 
-<!-- Change this code here by copy and pasting your template on line 15 -->
-<p>Welcome to your first GitHub Pages website!</p>
+    <!-- <footer class="footer">
+      <p>Copyright - 2018 Luca Barioglio</p>
+    </footer> -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $(".header__icon-bar").click(function (e) {
+
+                $(".header__menu").toggleClass('is-open');
+                e.preventDefault();
+
+            });
+        });
+    </script>
 
 </body>
+
 </html>
