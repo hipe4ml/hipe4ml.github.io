@@ -29,7 +29,9 @@
     &#34;&#34;&#34;
 
 import numpy as np
+from sklearn.model_selection import KFold
 from sklearn.preprocessing import label_binarize
+from sklearn.metrics import roc_auc_score
 
 
 def bdt_efficiency_array(y_truth, y_score, n_points=50):
@@ -89,12 +91,60 @@ def bdt_efficiency_array(y_truth, y_score, n_points=50):
 
             efficiency = np.empty((0, n_points))
             for thr in threshold:
-                n_sig_selected = np.sum(y_truth_multi[:, clas][y_score[:, clas] &gt; thr])
+                n_sig_selected = np.sum(
+                    y_truth_multi[:, clas][y_score[:, clas] &gt; thr])
                 efficiency = np.append(efficiency, [n_sig_selected/n_sig])
             efficiencies.append(efficiency)
         efficiencies = np.array(efficiencies)
 
-    return efficiencies, threshold</code></pre>
+    return efficiencies, threshold
+
+
+def cross_val_roc_score_multiclass(model, training_df, y_training, n_classes, n_fold):
+    &#34;&#34;&#34;
+    Evaluate a score using the roc auc metric by cross validation for multiclass
+    classifiers
+
+    Input
+    ------------------------------------------------
+    model: xgboost or sklearn multiclass model
+
+    df_training: Pandas Dataframe
+    Training set dataframe
+
+    y_training: array
+    Training set labels. The candidates for each
+    class should be labeled with 0, ..., N.
+
+    n_classes: int
+    Number of classes: should be greater than two. Otherwise
+    use the standard cross_val_score(sklearn) implementation
+
+    nfold: int
+    Number of folds to calculate the cross
+    validation error
+
+    Output
+    ------------------------------------------------
+    mean: int
+    Average of the scores evaluated in the k-different folds
+
+
+    &#34;&#34;&#34;
+    scores = []
+    kfold = KFold(n_splits=n_fold, shuffle=True, random_state=42)
+    for index in kfold.split(training_df):
+        x_train = training_df.iloc[index[0]]
+        y_train = y_training[index[0]]
+        x_test = training_df.iloc[index[1]]
+        y_test = y_training[index[1]]
+        model.fit(x_train, y_train)
+        y_score = model.predict_proba(x_test)
+        y_test_multi = label_binarize(y_test, classes=range(n_classes))
+        score = roc_auc_score(y_test_multi, y_score, average=&#39;micro&#39;)
+        scores.append(score)
+    mean = np.mean(scores)
+    return mean</code></pre>
 </details>
 </section>
 <section>
@@ -204,12 +254,102 @@ Numpy array of numpy arrays in case of multi-classification</p>
 
             efficiency = np.empty((0, n_points))
             for thr in threshold:
-                n_sig_selected = np.sum(y_truth_multi[:, clas][y_score[:, clas] &gt; thr])
+                n_sig_selected = np.sum(
+                    y_truth_multi[:, clas][y_score[:, clas] &gt; thr])
                 efficiency = np.append(efficiency, [n_sig_selected/n_sig])
             efficiencies.append(efficiency)
         efficiencies = np.array(efficiencies)
 
     return efficiencies, threshold</code></pre>
+</details>
+</dd>
+<dt id="hipe4ml.analysis_utils.cross_val_roc_score_multiclass"><code class="name flex">
+<span>def <span class="ident">cross_val_roc_score_multiclass</span></span>(<span>model, training_df, y_training, n_classes, n_fold)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Evaluate a score using the roc auc metric by cross validation for multiclass
+classifiers</p>
+<h2 id="input">Input</h2>
+<dl>
+<dt><strong><code>model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn</code> <code>multiclass</code> <code>model</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>df_training</code></strong> :&ensp;<code>Pandas</code> <code>Dataframe</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Training set dataframe</p>
+<dl>
+<dt><strong><code>y_training</code></strong> :&ensp;<code>array</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Training set labels. The candidates for each
+class should be labeled with 0, &hellip;, N.</p>
+<dl>
+<dt><strong><code>n_classes</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Number of classes: should be greater than two. Otherwise
+use the standard cross_val_score(sklearn) implementation</p>
+<dl>
+<dt><strong><code>nfold</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Number of folds to calculate the cross
+validation error</p>
+<h2 id="output">Output</h2>
+<dl>
+<dt><strong><code>mean</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Average of the scores evaluated in the k-different folds</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cross_val_roc_score_multiclass(model, training_df, y_training, n_classes, n_fold):
+    &#34;&#34;&#34;
+    Evaluate a score using the roc auc metric by cross validation for multiclass
+    classifiers
+
+    Input
+    ------------------------------------------------
+    model: xgboost or sklearn multiclass model
+
+    df_training: Pandas Dataframe
+    Training set dataframe
+
+    y_training: array
+    Training set labels. The candidates for each
+    class should be labeled with 0, ..., N.
+
+    n_classes: int
+    Number of classes: should be greater than two. Otherwise
+    use the standard cross_val_score(sklearn) implementation
+
+    nfold: int
+    Number of folds to calculate the cross
+    validation error
+
+    Output
+    ------------------------------------------------
+    mean: int
+    Average of the scores evaluated in the k-different folds
+
+
+    &#34;&#34;&#34;
+    scores = []
+    kfold = KFold(n_splits=n_fold, shuffle=True, random_state=42)
+    for index in kfold.split(training_df):
+        x_train = training_df.iloc[index[0]]
+        y_train = y_training[index[0]]
+        x_test = training_df.iloc[index[1]]
+        y_test = y_training[index[1]]
+        model.fit(x_train, y_train)
+        y_score = model.predict_proba(x_test)
+        y_test_multi = label_binarize(y_test, classes=range(n_classes))
+        score = roc_auc_score(y_test_multi, y_score, average=&#39;micro&#39;)
+        scores.append(score)
+    mean = np.mean(scores)
+    return mean</code></pre>
 </details>
 </dd>
 </dl>
@@ -231,6 +371,7 @@ Numpy array of numpy arrays in case of multi-classification</p>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="hipe4ml.analysis_utils.bdt_efficiency_array" href="#hipe4ml.analysis_utils.bdt_efficiency_array">bdt_efficiency_array</a></code></li>
+<li><code><a title="hipe4ml.analysis_utils.cross_val_roc_score_multiclass" href="#hipe4ml.analysis_utils.cross_val_roc_score_multiclass">cross_val_roc_score_multiclass</a></code></li>
 </ul>
 </li>
 </ul>
