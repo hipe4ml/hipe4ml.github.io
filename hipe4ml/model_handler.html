@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.2" />
+<meta name="generator" content="pdoc 0.7.5" />
 <title>hipe4ml.model_handler API documentation</title>
 <meta name="description" content="Module containing the class used for wrapping the models from different
 ML libraries to build a new model with common methods" />
@@ -36,42 +36,38 @@ import pickle
 
 import numpy as np
 from bayes_opt import BayesianOptimization
-from sklearn.metrics import auc, roc_auc_score, roc_curve
+from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import label_binarize
-
-import hipe4ml.analysis_utils as au
 
 
 class ModelHandler:
     &#34;&#34;&#34;
     Class used for wrapping the models from different ML libraries to
-    build a new model with common methods
+    build a new model with common methods. Currently only XGBoost
+    (through it&#39;s sklearn interface) and sklearn models are supported.
 
     Input
     -------------------------------------------------
     input_model: xgboost or sklearn model
 
     training_columns: list
-    Contains the name of the features used for the training.
-    Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
+        Contains the name of the features used for the training.
+        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
 
     model_params: dict
-    Model (hyper-)parameter values. For
-    example: silent, n_jobs, objective,
-    random_state, eval_metric, tree_method,
-    max_depth, learning_rate,
-    n_estimators, gamma, min_child_weight,
-    subsample, colsample_bytree
-
+        Model hyper-parameter values. For
+        example (XGBoost): max_depth, learning_rate,
+        n_estimators, gamma, min_child_weight, ...
     &#34;&#34;&#34;
 
     def __init__(self, input_model=None, training_columns=None, model_params=None):
         self.model = input_model
-        self.model_params = model_params
         self.training_columns = training_columns
+        self.model_params = model_params
+
         if self.model is not None:
             self.model_string = inspect.getmodule(self.model).__name__.partition(&#39;.&#39;)[0]
+
             if self.model_params is None:
                 self.model_params = self.model.get_params()
 
@@ -82,13 +78,9 @@ class ModelHandler:
         Input
         ------------------------------------
         model_params: dict
-        Model (hyper-)parameter values. For
-        example: silent, n_jobs, objective,
-        random_state, eval_metric, tree_method,
-        max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
-
+            Model hyper-parameter values. For
+            example (XGBoost): max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight, ...
         &#34;&#34;&#34;
         self.model_params = model_params
         self.model.set_params(**model_params)
@@ -100,37 +92,33 @@ class ModelHandler:
         Output
         ------------------------------------
         dict
-        Model (hyper-)parameter values. For
-        example: silent, n_jobs, objective,
-        random_state, eval_metric, tree_method,
-        max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
-
+            Model hyper-parameter values. For
+            example (XGBoost): max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight, ...
         &#34;&#34;&#34;
         return self.model.get_params()
 
     def set_training_columns(self, training_columns):
         &#34;&#34;&#34;
         Set the features used for the training process
+
         Input
         ------------------------------------
         training_columns: list
-        Contains the name of the features used for the training.
-        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
+            Contains the name of the features used for the training.
+            Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
         &#34;&#34;&#34;
         self.training_columns = training_columns
 
     def get_training_columns(self):
         &#34;&#34;&#34;
         Get the features used for the training process
+
         Output
         ------------------------------------
         list
-        Contains the name of the features used for the training.
-        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
+            Contains the name of the features used for the training.
+            Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
         &#34;&#34;&#34;
 
         return self.training_columns
@@ -141,7 +129,7 @@ class ModelHandler:
 
         Output
         ---------------------------
-        sklearn or xgboost model
+        sklearn or XGBoost model
         &#34;&#34;&#34;
         return self.model
 
@@ -153,7 +141,7 @@ class ModelHandler:
         Output
         ---------------------------
         str
-        Name of the model module
+            Name of the model module
         &#34;&#34;&#34;
         return self.model_string
 
@@ -164,11 +152,10 @@ class ModelHandler:
         Input
         ---------------------------
         x_train: array-like, sparse matrix
-        Training data
+            Training data
 
-        y_train:array-like, sparse matrix
-        Target data
-
+        y_train: array-like, sparse matrix
+            Target data
         &#34;&#34;&#34;
         if self.training_columns is not None:
             self.model.fit(x_train[self.training_columns], y_train)
@@ -182,51 +169,56 @@ class ModelHandler:
         Input
         --------------------------------------
         x_test: array-like, sparse matrix
-        The input samples. Internally, its dtype
-        will be converted to dtype=np.float32. If a
-        sparse matrix is provided, it will be converted
-        to a sparse csr_matrix.
+            The input samples. Internally, its dtype
+            will be converted to dtype=np.float32. If a
+            sparse matrix is provided, it will be converted
+            to a sparse csr_matrix.
 
         output_margin: bool
-        Whether to output the raw untransformed margin value.
+            Whether to output the raw untransformed margin value.
 
         Output
         ---------------------------------------
-        numpy array
-        Model prediction
-
+        pred: numpy_array
+            Model predictions
         &#34;&#34;&#34;
         if self.training_columns is not None:
             x_test = x_test[self.training_columns]
 
-        if self.model_string == &#39;xgboost&#39;:
-            if output_margin:
-                pred = self.model.predict(x_test, output_margin=output_margin)
-            else:
-                pred = self.model.predict_proba(x_test)[:, 1]
-        if self.model_string == &#39;sklearn&#39;:
-            if output_margin:
+        if output_margin:
+            if self.model_string == &#39;xgboost&#39;:
+                pred = self.model.predict(x_test, True)
+            if self.model_string == &#39;sklearn&#39;:
                 pred = self.model.decision_function(x_test).ravel()
-            else:
-                pred = self.model.predict_proba(x_test)[:, 1]
+        else:
+            pred = self.model.predict_proba(x_test)
+            # in case of binary classification return only the scores of
+            # the signal class
+            if pred.shape[1] &lt;= 2:
+                pred = pred[:, 1]
 
         return pred
 
-    def train_test_model(self, data):
+    def train_test_model(self, data, average=&#39;macro&#39;, multi_class_opt=&#39;raise&#39;):
         &#34;&#34;&#34;
-        Perform the training and the testing of the model
+        Perform the training and the testing of the model. The model performance is estimated
+        using the ROC AUC metric
 
         Input
         ----------------------------------------------
-
         data: list
-        Contains respectively: training
-        set dataframe, training label array,
-        test set dataframe, test label array
+            Contains respectively: training
+            set dataframe, training label array,
+            test set dataframe, test label array
 
-        Output
-        ---------------------------------------------
-        sklearn or xgboost trained model
+        average: string
+            Option for the average of ROC AUC scores used only in case of multi-classification.
+            You can choose between &#39;macro&#39; and &#39;weighted&#39;. For more information see
+            https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html#sklearn.metrics.roc_auc_score
+
+        multi_class_opt: string
+            Option to compute ROC AUC scores used only in case of multi-classification.
+            The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
         &#34;&#34;&#34;
 
         # get number of classes
@@ -236,137 +228,113 @@ class ModelHandler:
         # final training with the optimized hyperparams
         print(&#39;Training the final model: ...&#39;, end=&#39;\r&#39;)
         self.fit(data[0], data[1])
-        print(&#39;{}&#39;.format(self.get_model_params()))
-        print(&#39;Training the final model: Done!\n&#39;)
+        print(&#39;Training the final model: Done!&#39;)
         print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
+        y_pred = self.predict(data[2], output_margin=False)
+        roc_score = roc_auc_score(data[3], y_pred, average=average, multi_class=multi_class_opt)
+        print(&#39;Testing the model: Done!&#39;)
 
-        y_pred = self.predict(data[2], output_margin=True)
-        if n_classes &lt;= 2:
-            roc_score = roc_auc_score(data[3], y_pred)
-        else:
-            # convert multi-class labels to multi-labels to obtain roc curves
-            y_test_multi = label_binarize(data[3], classes=range(n_classes))
-            fpr, tpr = {}, {}
-            for clas in range(n_classes):
-                fpr[clas], tpr[clas], _ = roc_curve(
-                    y_test_multi[:, clas], y_pred[:, clas])
-            fpr[&#39;micro&#39;], tpr[&#39;micro&#39;], _ = roc_curve(
-                y_test_multi.ravel(), y_pred.ravel())
-            roc_score = auc(fpr[&#39;micro&#39;], tpr[&#39;micro&#39;])
+        print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
+        print(&#39;==============================&#39;)
 
-        print(&#39;Testing the model: Done!\n&#39;)
-
-        print(&#39;ROC_AUC_score: {}\n&#39;.format(roc_score))
-        print(&#39;==============================\n&#39;)
-
-    def evaluate_hyperparams(self, data, opt_params, metrics, n_classes, nfold=5):
+    def evaluate_hyperparams(self, data, opt_params, scoring, nfold=5, njobs=None):
         &#34;&#34;&#34;
-        Calculate for a set of hyperparams the cross val score
+        Calculate the cross-validation score for a set of hyper-parameters
 
         Input
         ------------------------------------------
-
         data: list
-        Contains respectively: training
-        set dataframe, training label array,
-        test set dataframe, test label array
+            Contains respectively: training
+            set dataframe, training label array,
+            test set dataframe, test label array
 
         opt_params: dict
-        Hyperparameters to be optimized. For
-        example: max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
+            Hyperparameters to be optimized. For
+            example: max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight,
+            subsample, colsample_bytree
 
-        metrics: string, callable or None
-        A string (see sklearn model evaluation
-        documentation:
-        https://scikit-learn.org/stable/modules/model_evaluation.html)
-        or a scorer callable object / function
-        with signature scorer(estimator, X, y)
-        which should return only a
-        single value.
+        scoring: string, callable or None
+            A string (see sklearn model evaluation documentation:
+            https://scikit-learn.org/stable/modules/model_evaluation.html)
+            or a scorer callable object / function with signature scorer(estimator, X, y)
+            which should return only a single value
 
         nfold: int
-        Number of folds to calculate the cross
-        validation error
+            Number of folds to perform the cross validation
+
+        njobs: int or None
+            Number of CPUs to use to perform computation.
+            Set to -1 to use all CPUs
 
         Output
         ---------------------------------------------------------
         float
-        Cross validation score evaluated using
-        the ROC AUC metrics
-
-
+            Cross validation score evaluated using
+            the ROC AUC metrics
         &#34;&#34;&#34;
         opt_params = self.cast_model_params(opt_params)
         params = {**self.model_params, **opt_params}
         self.model.set_params(**params)
-        if n_classes &gt; 2 and metrics == &#39;roc_auc&#39;:
-            if self.training_columns is not None:
-                return np.mean(au.cross_val_roc_score_multiclass(self.model, data[0][self.training_columns],
-                                                                 data[1], n_classes=n_classes, n_fold=nfold))
-            return np.mean(au.cross_val_roc_score_multiclass(self.model, data[0], data[1],
-                                                             n_classes=n_classes, n_fold=nfold))
         if self.training_columns is not None:
             return np.mean(cross_val_score(self.model, data[0][self.training_columns], data[1],
-                                           cv=nfold, scoring=metrics))
-        return np.mean(cross_val_score(self.model, data[0], data[1], cv=nfold, scoring=metrics))
+                                           cv=nfold, scoring=scoring, n_jobs=njobs))
+        return np.mean(cross_val_score(self.model, data[0], data[1], cv=nfold, scoring=scoring, n_jobs=njobs))
 
-    def optimize_params_bayes(self, data, hyperparams_ranges, metrics, nfold=5, init_points=5,
-                              n_iter=5):
+    def optimize_params_bayes(self, data, hyperparams_ranges, scoring, nfold=5, init_points=5,
+                              n_iter=5, njobs=None):
         &#34;&#34;&#34;
-        Perform Bayesian optimization
+        Perform Bayesian optimization and update the model hyper-parameters
+        with the best ones
 
         Input
         ------------------------------------------------------
-
         data: list
-        Contains respectively: training
-        set dataframe, training label array,
-        test set dataframe, test label array
+            Contains respectively: training
+            set dataframe, training label array,
+            test set dataframe, test label array
 
         hyperparams_ranges: dict
-        Xgboost hyperparameter ranges(in tuples).
-        For example:
-        dict={
-            &#39;max_depth&#39;:(10,100)
-            &#39;learning_rate&#39;: (0.01,0.03)
-        }
+            Xgboost hyperparameter ranges(in tuples).
+            For example:
+            dict={
+                &#39;max_depth&#39;:(10,100)
+                &#39;learning_rate&#39;: (0.01,0.03)
+            }
 
-        metrics: string, callable or None
-        A string (see sklearn model evaluation
-        documentation:
-        https://scikit-learn.org/stable/modules/model_evaluation.html)
-        or a scorer callable object / function
-        with signature scorer(estimator, X, y)
-        which should return only a
-        single value.
+        scoring: string, callable or None
+            A string (see sklearn model evaluation documentation:
+            https://scikit-learn.org/stable/modules/model_evaluation.html)
+            or a scorer callable object / function with signature scorer(estimator, X, y)
+            which should return only a single value.
+            In binary classification &#39;roc_auc&#39; is suggested.
+            In multi-classification one between ‘roc_auc_ovr’, ‘roc_auc_ovo’,
+            ‘roc_auc_ovr_weighted’ and ‘roc_auc_ovo_weighted’ is suggested.
+            For more information see
+            https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
 
         nfold: int
-        Number of folds to calculate the cross validation error
+            Number of folds to calculate the cross validation error
 
         init_points: int
-        How many steps of random exploration you want to perform.
-        Random exploration can help by diversifying the exploration space
+            How many steps of random exploration you want to perform.
+            Random exploration can help by diversifying the exploration space
 
+        n_iter: int
+            How many steps for bayesian optimization of the target function.
+            Bigger n_iter results in better description of thetarget function
 
-        Output
-        ---------------------------------------------------------
-        dict
-        Contains the optimized parameters
-
+        njobs: int or None
+            Number of CPUs to perform computation used in the score evaluation
+            with cross-validation. Set to -1 to use all CPUs
         &#34;&#34;&#34;
-
-        # get number of classes
-        n_classes = len(np.unique(data[1]))
-
         # just an helper function
         def hyperparams_crossvalidation(**kwargs):
-            return self.evaluate_hyperparams(data, kwargs, metrics, n_classes, nfold)
+            return self.evaluate_hyperparams(data, kwargs, scoring, nfold, njobs)
         print(&#39;&#39;)
 
-        optimizer = BayesianOptimization(f=hyperparams_crossvalidation,
-                                         pbounds=hyperparams_ranges, verbose=2, random_state=42)
+        optimizer = BayesianOptimization(f=hyperparams_crossvalidation, pbounds=hyperparams_ranges,
+                                         verbose=2, random_state=42)
         optimizer.maximize(init_points=init_points, n_iter=n_iter, acq=&#39;poi&#39;)
         print(&#39;&#39;)
 
@@ -374,10 +342,9 @@ class ModelHandler:
         max_params = {key: None for key in hyperparams_ranges.keys()}
         for key in max_params.keys():
             max_params[key] = optimizer.max[&#39;params&#39;][key]
-        print(&#39;Best target: {0:.6f}&#39;.format(optimizer.max[&#39;target&#39;]))
-        print(&#39;Best parameters: {}&#39;.format(max_params))
-        self.set_model_params(
-            {**self.model_params, **self.cast_model_params(max_params)})
+        print(f&#34;Best target: {optimizer.max[&#39;target&#39;]:.6f}&#34;)
+        print(f&#39;Best parameters: {max_params}&#39;)
+        self.set_model_params({**self.model_params, **self.cast_model_params(max_params)})
 
     def cast_model_params(self, params):
         &#34;&#34;&#34;
@@ -386,18 +353,16 @@ class ModelHandler:
 
         Input
         -----------------------------------------------------
-
         params: dict
-        Hyperparameter values. For
-        example: max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
+            Hyperparameter values. For
+            example: max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight,
+            subsample, colsample_bytree
 
-        Output:
+        Output
         -----------------------------------------------------
-        dict
-        Hyperparameter values updated
-
+        params: dict
+            Hyperparameter values updated
         &#34;&#34;&#34;
         for key in params.keys():
             if isinstance(self.model.get_params()[key], int):
@@ -413,10 +378,10 @@ class ModelHandler:
         Input
         -----------------------------------------------------
         filename: str
-        Name of the file in which the model is saved
+            Name of the file in which the model is saved
 
         xgb_format : bool
-        If True saves the xgboost model into a .model file
+            If True saves the xgboost model into a .model file
         &#34;&#34;&#34;
         if xgb_format is False:
             pickle.dump(self.model, open(filename, &#34;wb&#34;))
@@ -433,10 +398,8 @@ class ModelHandler:
         Input
         -----------------------------------------------------
         filename: str
-        Name of the file in which the model is saved
-
+            Name of the file in which the model is saved
         &#34;&#34;&#34;
-
         pickle.dump(self, open(filename, &#34;wb&#34;))
 
     def load_model_handler(self, filename):
@@ -446,7 +409,7 @@ class ModelHandler:
         Input
         -----------------------------------------------------
         filename: str
-        Name of the file in which the model is saved
+            Name of the file in which the model is saved
         &#34;&#34;&#34;
         loaded_model = pickle.load(open(filename, &#39;rb&#39;))
         self.model = loaded_model.get_original_model()
@@ -470,26 +433,19 @@ class ModelHandler:
 </code></dt>
 <dd>
 <section class="desc"><p>Class used for wrapping the models from different ML libraries to
-build a new model with common methods</p>
+build a new model with common methods. Currently only XGBoost
+(through it's sklearn interface) and sklearn models are supported.</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>input_model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn</code> <code>model</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>training_columns</code></strong> :&ensp;<code>list</code></dt>
-<dd>&nbsp;</dd>
-<dt>Contains the name of the features used for the training.</dt>
-<dt><strong><code>Example</code></strong> :&ensp;[<code>'dEdx'</code>, <code>'pT'</code>, <code>'ct'</code>]</dt>
-<dd>&nbsp;</dd>
+<dd>Contains the name of the features used for the training.
+Example: ['dEdx', 'pT', 'ct']</dd>
 <dt><strong><code>model_params</code></strong> :&ensp;<code>dict</code></dt>
-<dd>&nbsp;</dd>
-<dt>Model (hyper-)parameter values. For</dt>
-<dt><strong><code>example</code></strong> :&ensp;<code>silent</code>, <code>n_jobs</code>, <code>objective</code>,</dt>
-<dd>&nbsp;</dd>
-<dt>random_state, eval_metric, tree_method,</dt>
-<dt>max_depth, learning_rate,</dt>
-<dt>n_estimators, gamma, min_child_weight,</dt>
-<dt><strong><code>subsample</code></strong>, <strong><code>colsample_bytree</code></strong></dt>
-<dd>&nbsp;</dd>
+<dd>Model hyper-parameter values. For
+example (XGBoost): max_depth, learning_rate,
+n_estimators, gamma, min_child_weight, &hellip;</dd>
 </dl></section>
 <details class="source">
 <summary>
@@ -498,32 +454,31 @@ build a new model with common methods</p>
 <pre><code class="python">class ModelHandler:
     &#34;&#34;&#34;
     Class used for wrapping the models from different ML libraries to
-    build a new model with common methods
+    build a new model with common methods. Currently only XGBoost
+    (through it&#39;s sklearn interface) and sklearn models are supported.
 
     Input
     -------------------------------------------------
     input_model: xgboost or sklearn model
 
     training_columns: list
-    Contains the name of the features used for the training.
-    Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
+        Contains the name of the features used for the training.
+        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
 
     model_params: dict
-    Model (hyper-)parameter values. For
-    example: silent, n_jobs, objective,
-    random_state, eval_metric, tree_method,
-    max_depth, learning_rate,
-    n_estimators, gamma, min_child_weight,
-    subsample, colsample_bytree
-
+        Model hyper-parameter values. For
+        example (XGBoost): max_depth, learning_rate,
+        n_estimators, gamma, min_child_weight, ...
     &#34;&#34;&#34;
 
     def __init__(self, input_model=None, training_columns=None, model_params=None):
         self.model = input_model
-        self.model_params = model_params
         self.training_columns = training_columns
+        self.model_params = model_params
+
         if self.model is not None:
             self.model_string = inspect.getmodule(self.model).__name__.partition(&#39;.&#39;)[0]
+
             if self.model_params is None:
                 self.model_params = self.model.get_params()
 
@@ -534,13 +489,9 @@ build a new model with common methods</p>
         Input
         ------------------------------------
         model_params: dict
-        Model (hyper-)parameter values. For
-        example: silent, n_jobs, objective,
-        random_state, eval_metric, tree_method,
-        max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
-
+            Model hyper-parameter values. For
+            example (XGBoost): max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight, ...
         &#34;&#34;&#34;
         self.model_params = model_params
         self.model.set_params(**model_params)
@@ -552,37 +503,33 @@ build a new model with common methods</p>
         Output
         ------------------------------------
         dict
-        Model (hyper-)parameter values. For
-        example: silent, n_jobs, objective,
-        random_state, eval_metric, tree_method,
-        max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
-
+            Model hyper-parameter values. For
+            example (XGBoost): max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight, ...
         &#34;&#34;&#34;
         return self.model.get_params()
 
     def set_training_columns(self, training_columns):
         &#34;&#34;&#34;
         Set the features used for the training process
+
         Input
         ------------------------------------
         training_columns: list
-        Contains the name of the features used for the training.
-        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
+            Contains the name of the features used for the training.
+            Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
         &#34;&#34;&#34;
         self.training_columns = training_columns
 
     def get_training_columns(self):
         &#34;&#34;&#34;
         Get the features used for the training process
+
         Output
         ------------------------------------
         list
-        Contains the name of the features used for the training.
-        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
+            Contains the name of the features used for the training.
+            Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
         &#34;&#34;&#34;
 
         return self.training_columns
@@ -593,7 +540,7 @@ build a new model with common methods</p>
 
         Output
         ---------------------------
-        sklearn or xgboost model
+        sklearn or XGBoost model
         &#34;&#34;&#34;
         return self.model
 
@@ -605,7 +552,7 @@ build a new model with common methods</p>
         Output
         ---------------------------
         str
-        Name of the model module
+            Name of the model module
         &#34;&#34;&#34;
         return self.model_string
 
@@ -616,11 +563,10 @@ build a new model with common methods</p>
         Input
         ---------------------------
         x_train: array-like, sparse matrix
-        Training data
+            Training data
 
-        y_train:array-like, sparse matrix
-        Target data
-
+        y_train: array-like, sparse matrix
+            Target data
         &#34;&#34;&#34;
         if self.training_columns is not None:
             self.model.fit(x_train[self.training_columns], y_train)
@@ -634,51 +580,56 @@ build a new model with common methods</p>
         Input
         --------------------------------------
         x_test: array-like, sparse matrix
-        The input samples. Internally, its dtype
-        will be converted to dtype=np.float32. If a
-        sparse matrix is provided, it will be converted
-        to a sparse csr_matrix.
+            The input samples. Internally, its dtype
+            will be converted to dtype=np.float32. If a
+            sparse matrix is provided, it will be converted
+            to a sparse csr_matrix.
 
         output_margin: bool
-        Whether to output the raw untransformed margin value.
+            Whether to output the raw untransformed margin value.
 
         Output
         ---------------------------------------
-        numpy array
-        Model prediction
-
+        pred: numpy_array
+            Model predictions
         &#34;&#34;&#34;
         if self.training_columns is not None:
             x_test = x_test[self.training_columns]
 
-        if self.model_string == &#39;xgboost&#39;:
-            if output_margin:
-                pred = self.model.predict(x_test, output_margin=output_margin)
-            else:
-                pred = self.model.predict_proba(x_test)[:, 1]
-        if self.model_string == &#39;sklearn&#39;:
-            if output_margin:
+        if output_margin:
+            if self.model_string == &#39;xgboost&#39;:
+                pred = self.model.predict(x_test, True)
+            if self.model_string == &#39;sklearn&#39;:
                 pred = self.model.decision_function(x_test).ravel()
-            else:
-                pred = self.model.predict_proba(x_test)[:, 1]
+        else:
+            pred = self.model.predict_proba(x_test)
+            # in case of binary classification return only the scores of
+            # the signal class
+            if pred.shape[1] &lt;= 2:
+                pred = pred[:, 1]
 
         return pred
 
-    def train_test_model(self, data):
+    def train_test_model(self, data, average=&#39;macro&#39;, multi_class_opt=&#39;raise&#39;):
         &#34;&#34;&#34;
-        Perform the training and the testing of the model
+        Perform the training and the testing of the model. The model performance is estimated
+        using the ROC AUC metric
 
         Input
         ----------------------------------------------
-
         data: list
-        Contains respectively: training
-        set dataframe, training label array,
-        test set dataframe, test label array
+            Contains respectively: training
+            set dataframe, training label array,
+            test set dataframe, test label array
 
-        Output
-        ---------------------------------------------
-        sklearn or xgboost trained model
+        average: string
+            Option for the average of ROC AUC scores used only in case of multi-classification.
+            You can choose between &#39;macro&#39; and &#39;weighted&#39;. For more information see
+            https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html#sklearn.metrics.roc_auc_score
+
+        multi_class_opt: string
+            Option to compute ROC AUC scores used only in case of multi-classification.
+            The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
         &#34;&#34;&#34;
 
         # get number of classes
@@ -688,137 +639,113 @@ build a new model with common methods</p>
         # final training with the optimized hyperparams
         print(&#39;Training the final model: ...&#39;, end=&#39;\r&#39;)
         self.fit(data[0], data[1])
-        print(&#39;{}&#39;.format(self.get_model_params()))
-        print(&#39;Training the final model: Done!\n&#39;)
+        print(&#39;Training the final model: Done!&#39;)
         print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
+        y_pred = self.predict(data[2], output_margin=False)
+        roc_score = roc_auc_score(data[3], y_pred, average=average, multi_class=multi_class_opt)
+        print(&#39;Testing the model: Done!&#39;)
 
-        y_pred = self.predict(data[2], output_margin=True)
-        if n_classes &lt;= 2:
-            roc_score = roc_auc_score(data[3], y_pred)
-        else:
-            # convert multi-class labels to multi-labels to obtain roc curves
-            y_test_multi = label_binarize(data[3], classes=range(n_classes))
-            fpr, tpr = {}, {}
-            for clas in range(n_classes):
-                fpr[clas], tpr[clas], _ = roc_curve(
-                    y_test_multi[:, clas], y_pred[:, clas])
-            fpr[&#39;micro&#39;], tpr[&#39;micro&#39;], _ = roc_curve(
-                y_test_multi.ravel(), y_pred.ravel())
-            roc_score = auc(fpr[&#39;micro&#39;], tpr[&#39;micro&#39;])
+        print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
+        print(&#39;==============================&#39;)
 
-        print(&#39;Testing the model: Done!\n&#39;)
-
-        print(&#39;ROC_AUC_score: {}\n&#39;.format(roc_score))
-        print(&#39;==============================\n&#39;)
-
-    def evaluate_hyperparams(self, data, opt_params, metrics, n_classes, nfold=5):
+    def evaluate_hyperparams(self, data, opt_params, scoring, nfold=5, njobs=None):
         &#34;&#34;&#34;
-        Calculate for a set of hyperparams the cross val score
+        Calculate the cross-validation score for a set of hyper-parameters
 
         Input
         ------------------------------------------
-
         data: list
-        Contains respectively: training
-        set dataframe, training label array,
-        test set dataframe, test label array
+            Contains respectively: training
+            set dataframe, training label array,
+            test set dataframe, test label array
 
         opt_params: dict
-        Hyperparameters to be optimized. For
-        example: max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
+            Hyperparameters to be optimized. For
+            example: max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight,
+            subsample, colsample_bytree
 
-        metrics: string, callable or None
-        A string (see sklearn model evaluation
-        documentation:
-        https://scikit-learn.org/stable/modules/model_evaluation.html)
-        or a scorer callable object / function
-        with signature scorer(estimator, X, y)
-        which should return only a
-        single value.
+        scoring: string, callable or None
+            A string (see sklearn model evaluation documentation:
+            https://scikit-learn.org/stable/modules/model_evaluation.html)
+            or a scorer callable object / function with signature scorer(estimator, X, y)
+            which should return only a single value
 
         nfold: int
-        Number of folds to calculate the cross
-        validation error
+            Number of folds to perform the cross validation
+
+        njobs: int or None
+            Number of CPUs to use to perform computation.
+            Set to -1 to use all CPUs
 
         Output
         ---------------------------------------------------------
         float
-        Cross validation score evaluated using
-        the ROC AUC metrics
-
-
+            Cross validation score evaluated using
+            the ROC AUC metrics
         &#34;&#34;&#34;
         opt_params = self.cast_model_params(opt_params)
         params = {**self.model_params, **opt_params}
         self.model.set_params(**params)
-        if n_classes &gt; 2 and metrics == &#39;roc_auc&#39;:
-            if self.training_columns is not None:
-                return np.mean(au.cross_val_roc_score_multiclass(self.model, data[0][self.training_columns],
-                                                                 data[1], n_classes=n_classes, n_fold=nfold))
-            return np.mean(au.cross_val_roc_score_multiclass(self.model, data[0], data[1],
-                                                             n_classes=n_classes, n_fold=nfold))
         if self.training_columns is not None:
             return np.mean(cross_val_score(self.model, data[0][self.training_columns], data[1],
-                                           cv=nfold, scoring=metrics))
-        return np.mean(cross_val_score(self.model, data[0], data[1], cv=nfold, scoring=metrics))
+                                           cv=nfold, scoring=scoring, n_jobs=njobs))
+        return np.mean(cross_val_score(self.model, data[0], data[1], cv=nfold, scoring=scoring, n_jobs=njobs))
 
-    def optimize_params_bayes(self, data, hyperparams_ranges, metrics, nfold=5, init_points=5,
-                              n_iter=5):
+    def optimize_params_bayes(self, data, hyperparams_ranges, scoring, nfold=5, init_points=5,
+                              n_iter=5, njobs=None):
         &#34;&#34;&#34;
-        Perform Bayesian optimization
+        Perform Bayesian optimization and update the model hyper-parameters
+        with the best ones
 
         Input
         ------------------------------------------------------
-
         data: list
-        Contains respectively: training
-        set dataframe, training label array,
-        test set dataframe, test label array
+            Contains respectively: training
+            set dataframe, training label array,
+            test set dataframe, test label array
 
         hyperparams_ranges: dict
-        Xgboost hyperparameter ranges(in tuples).
-        For example:
-        dict={
-            &#39;max_depth&#39;:(10,100)
-            &#39;learning_rate&#39;: (0.01,0.03)
-        }
+            Xgboost hyperparameter ranges(in tuples).
+            For example:
+            dict={
+                &#39;max_depth&#39;:(10,100)
+                &#39;learning_rate&#39;: (0.01,0.03)
+            }
 
-        metrics: string, callable or None
-        A string (see sklearn model evaluation
-        documentation:
-        https://scikit-learn.org/stable/modules/model_evaluation.html)
-        or a scorer callable object / function
-        with signature scorer(estimator, X, y)
-        which should return only a
-        single value.
+        scoring: string, callable or None
+            A string (see sklearn model evaluation documentation:
+            https://scikit-learn.org/stable/modules/model_evaluation.html)
+            or a scorer callable object / function with signature scorer(estimator, X, y)
+            which should return only a single value.
+            In binary classification &#39;roc_auc&#39; is suggested.
+            In multi-classification one between ‘roc_auc_ovr’, ‘roc_auc_ovo’,
+            ‘roc_auc_ovr_weighted’ and ‘roc_auc_ovo_weighted’ is suggested.
+            For more information see
+            https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
 
         nfold: int
-        Number of folds to calculate the cross validation error
+            Number of folds to calculate the cross validation error
 
         init_points: int
-        How many steps of random exploration you want to perform.
-        Random exploration can help by diversifying the exploration space
+            How many steps of random exploration you want to perform.
+            Random exploration can help by diversifying the exploration space
 
+        n_iter: int
+            How many steps for bayesian optimization of the target function.
+            Bigger n_iter results in better description of thetarget function
 
-        Output
-        ---------------------------------------------------------
-        dict
-        Contains the optimized parameters
-
+        njobs: int or None
+            Number of CPUs to perform computation used in the score evaluation
+            with cross-validation. Set to -1 to use all CPUs
         &#34;&#34;&#34;
-
-        # get number of classes
-        n_classes = len(np.unique(data[1]))
-
         # just an helper function
         def hyperparams_crossvalidation(**kwargs):
-            return self.evaluate_hyperparams(data, kwargs, metrics, n_classes, nfold)
+            return self.evaluate_hyperparams(data, kwargs, scoring, nfold, njobs)
         print(&#39;&#39;)
 
-        optimizer = BayesianOptimization(f=hyperparams_crossvalidation,
-                                         pbounds=hyperparams_ranges, verbose=2, random_state=42)
+        optimizer = BayesianOptimization(f=hyperparams_crossvalidation, pbounds=hyperparams_ranges,
+                                         verbose=2, random_state=42)
         optimizer.maximize(init_points=init_points, n_iter=n_iter, acq=&#39;poi&#39;)
         print(&#39;&#39;)
 
@@ -826,10 +753,9 @@ build a new model with common methods</p>
         max_params = {key: None for key in hyperparams_ranges.keys()}
         for key in max_params.keys():
             max_params[key] = optimizer.max[&#39;params&#39;][key]
-        print(&#39;Best target: {0:.6f}&#39;.format(optimizer.max[&#39;target&#39;]))
-        print(&#39;Best parameters: {}&#39;.format(max_params))
-        self.set_model_params(
-            {**self.model_params, **self.cast_model_params(max_params)})
+        print(f&#34;Best target: {optimizer.max[&#39;target&#39;]:.6f}&#34;)
+        print(f&#39;Best parameters: {max_params}&#39;)
+        self.set_model_params({**self.model_params, **self.cast_model_params(max_params)})
 
     def cast_model_params(self, params):
         &#34;&#34;&#34;
@@ -838,18 +764,16 @@ build a new model with common methods</p>
 
         Input
         -----------------------------------------------------
-
         params: dict
-        Hyperparameter values. For
-        example: max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
+            Hyperparameter values. For
+            example: max_depth, learning_rate,
+            n_estimators, gamma, min_child_weight,
+            subsample, colsample_bytree
 
-        Output:
+        Output
         -----------------------------------------------------
-        dict
-        Hyperparameter values updated
-
+        params: dict
+            Hyperparameter values updated
         &#34;&#34;&#34;
         for key in params.keys():
             if isinstance(self.model.get_params()[key], int):
@@ -865,10 +789,10 @@ build a new model with common methods</p>
         Input
         -----------------------------------------------------
         filename: str
-        Name of the file in which the model is saved
+            Name of the file in which the model is saved
 
         xgb_format : bool
-        If True saves the xgboost model into a .model file
+            If True saves the xgboost model into a .model file
         &#34;&#34;&#34;
         if xgb_format is False:
             pickle.dump(self.model, open(filename, &#34;wb&#34;))
@@ -885,10 +809,8 @@ build a new model with common methods</p>
         Input
         -----------------------------------------------------
         filename: str
-        Name of the file in which the model is saved
-
+            Name of the file in which the model is saved
         &#34;&#34;&#34;
-
         pickle.dump(self, open(filename, &#34;wb&#34;))
 
     def load_model_handler(self, filename):
@@ -898,7 +820,7 @@ build a new model with common methods</p>
         Input
         -----------------------------------------------------
         filename: str
-        Name of the file in which the model is saved
+            Name of the file in which the model is saved
         &#34;&#34;&#34;
         loaded_model = pickle.load(open(filename, &#39;rb&#39;))
         self.model = loaded_model.get_original_model()
@@ -917,17 +839,16 @@ and change the parameter dictionary consequently</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>params</code></strong> :&ensp;<code>dict</code></dt>
-<dd>&nbsp;</dd>
-<dt>Hyperparameter values. For</dt>
-<dt><strong><code>example</code></strong> :&ensp;<code>max_depth</code>, <code>learning_rate</code>,</dt>
-<dd>&nbsp;</dd>
-<dt>n_estimators, gamma, min_child_weight,</dt>
-<dt><strong><code>subsample</code></strong>, <strong><code>colsample_bytree</code></strong></dt>
-<dd>&nbsp;</dd>
+<dd>Hyperparameter values. For
+example: max_depth, learning_rate,
+n_estimators, gamma, min_child_weight,
+subsample, colsample_bytree</dd>
 </dl>
-<h2 id="output">Output:</h2>
-<p>dict
-Hyperparameter values updated</p></section>
+<h2 id="output">Output</h2>
+<dl>
+<dt><strong><code>params</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Hyperparameter values updated</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -939,18 +860,16 @@ Hyperparameter values updated</p></section>
 
     Input
     -----------------------------------------------------
-
     params: dict
-    Hyperparameter values. For
-    example: max_depth, learning_rate,
-    n_estimators, gamma, min_child_weight,
-    subsample, colsample_bytree
+        Hyperparameter values. For
+        example: max_depth, learning_rate,
+        n_estimators, gamma, min_child_weight,
+        subsample, colsample_bytree
 
-    Output:
+    Output
     -----------------------------------------------------
-    dict
-    Hyperparameter values updated
-
+    params: dict
+        Hyperparameter values updated
     &#34;&#34;&#34;
     for key in params.keys():
         if isinstance(self.model.get_params()[key], int):
@@ -966,9 +885,8 @@ Hyperparameter values updated</p></section>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Name of the file in which the model is saved</p></section>
+<dd>Name of the file in which the model is saved</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -980,10 +898,8 @@ Hyperparameter values updated</p></section>
     Input
     -----------------------------------------------------
     filename: str
-    Name of the file in which the model is saved
-
+        Name of the file in which the model is saved
     &#34;&#34;&#34;
-
     pickle.dump(self, open(filename, &#34;wb&#34;))</code></pre>
 </details>
 </dd>
@@ -997,14 +913,10 @@ the possibility to save them into a .model file</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Name of the file in which the model is saved</p>
-<dl>
+<dd>Name of the file in which the model is saved</dd>
 <dt><strong><code>xgb_format</code></strong> :&ensp;<code>bool</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>If True saves the xgboost model into a .model file</p></section>
+<dd>If True saves the xgboost model into a .model file</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1018,10 +930,10 @@ the possibility to save them into a .model file</p>
     Input
     -----------------------------------------------------
     filename: str
-    Name of the file in which the model is saved
+        Name of the file in which the model is saved
 
     xgb_format : bool
-    If True saves the xgboost model into a .model file
+        If True saves the xgboost model into a .model file
     &#34;&#34;&#34;
     if xgb_format is False:
         pickle.dump(self.model, open(filename, &#34;wb&#34;))
@@ -1033,106 +945,85 @@ the possibility to save them into a .model file</p>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.evaluate_hyperparams"><code class="name flex">
-<span>def <span class="ident">evaluate_hyperparams</span></span>(<span>self, data, opt_params, metrics, n_classes, nfold=5)</span>
+<span>def <span class="ident">evaluate_hyperparams</span></span>(<span>self, data, opt_params, scoring, nfold=5, njobs=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate for a set of hyperparams the cross val score</p>
+<section class="desc"><p>Calculate the cross-validation score for a set of hyper-parameters</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Contains respectively: training
+<dd>Contains respectively: training
 set dataframe, training label array,
-test set dataframe, test label array</p>
-<dl>
+test set dataframe, test label array</dd>
 <dt><strong><code>opt_params</code></strong> :&ensp;<code>dict</code></dt>
-<dd>&nbsp;</dd>
-<dt>Hyperparameters to be optimized. For</dt>
-<dt><strong><code>example</code></strong> :&ensp;<code>max_depth</code>, <code>learning_rate</code>,</dt>
-<dd>&nbsp;</dd>
-<dt>n_estimators, gamma, min_child_weight,</dt>
-<dt><strong><code>subsample</code></strong>, <strong><code>colsample_bytree</code></strong></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>metrics</code></strong> :&ensp;<code>string</code>, <code>callable</code> or <code>None</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>A string (see sklearn model evaluation
-documentation:
+<dd>Hyperparameters to be optimized. For
+example: max_depth, learning_rate,
+n_estimators, gamma, min_child_weight,
+subsample, colsample_bytree</dd>
+<dt><strong><code>scoring</code></strong> :&ensp;<code>string</code>, <code>callable</code> or <code>None</code></dt>
+<dd>A string (see sklearn model evaluation documentation:
 <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">https://scikit-learn.org/stable/modules/model_evaluation.html</a>)
-or a scorer callable object / function
-with signature scorer(estimator, X, y)
-which should return only a
-single value.</p>
-<dl>
+or a scorer callable object / function with signature scorer(estimator, X, y)
+which should return only a single value</dd>
 <dt><strong><code>nfold</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
+<dd>Number of folds to perform the cross validation</dd>
+<dt><strong><code>njobs</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
+<dd>Number of CPUs to use to perform computation.
+Set to -1 to use all CPUs</dd>
 </dl>
-<p>Number of folds to calculate the cross
-validation error</p>
 <h2 id="output">Output</h2>
 <dl>
 <dt><strong><code>float</code></strong></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Cross validation score evaluated using
-the ROC AUC metrics</p></section>
+<dd>Cross validation score evaluated using
+the ROC AUC metrics</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def evaluate_hyperparams(self, data, opt_params, metrics, n_classes, nfold=5):
+<pre><code class="python">def evaluate_hyperparams(self, data, opt_params, scoring, nfold=5, njobs=None):
     &#34;&#34;&#34;
-    Calculate for a set of hyperparams the cross val score
+    Calculate the cross-validation score for a set of hyper-parameters
 
     Input
     ------------------------------------------
-
     data: list
-    Contains respectively: training
-    set dataframe, training label array,
-    test set dataframe, test label array
+        Contains respectively: training
+        set dataframe, training label array,
+        test set dataframe, test label array
 
     opt_params: dict
-    Hyperparameters to be optimized. For
-    example: max_depth, learning_rate,
-    n_estimators, gamma, min_child_weight,
-    subsample, colsample_bytree
+        Hyperparameters to be optimized. For
+        example: max_depth, learning_rate,
+        n_estimators, gamma, min_child_weight,
+        subsample, colsample_bytree
 
-    metrics: string, callable or None
-    A string (see sklearn model evaluation
-    documentation:
-    https://scikit-learn.org/stable/modules/model_evaluation.html)
-    or a scorer callable object / function
-    with signature scorer(estimator, X, y)
-    which should return only a
-    single value.
+    scoring: string, callable or None
+        A string (see sklearn model evaluation documentation:
+        https://scikit-learn.org/stable/modules/model_evaluation.html)
+        or a scorer callable object / function with signature scorer(estimator, X, y)
+        which should return only a single value
 
     nfold: int
-    Number of folds to calculate the cross
-    validation error
+        Number of folds to perform the cross validation
+
+    njobs: int or None
+        Number of CPUs to use to perform computation.
+        Set to -1 to use all CPUs
 
     Output
     ---------------------------------------------------------
     float
-    Cross validation score evaluated using
-    the ROC AUC metrics
-
-
+        Cross validation score evaluated using
+        the ROC AUC metrics
     &#34;&#34;&#34;
     opt_params = self.cast_model_params(opt_params)
     params = {**self.model_params, **opt_params}
     self.model.set_params(**params)
-    if n_classes &gt; 2 and metrics == &#39;roc_auc&#39;:
-        if self.training_columns is not None:
-            return np.mean(au.cross_val_roc_score_multiclass(self.model, data[0][self.training_columns],
-                                                             data[1], n_classes=n_classes, n_fold=nfold))
-        return np.mean(au.cross_val_roc_score_multiclass(self.model, data[0], data[1],
-                                                         n_classes=n_classes, n_fold=nfold))
     if self.training_columns is not None:
         return np.mean(cross_val_score(self.model, data[0][self.training_columns], data[1],
-                                       cv=nfold, scoring=metrics))
-    return np.mean(cross_val_score(self.model, data[0], data[1], cv=nfold, scoring=metrics))</code></pre>
+                                       cv=nfold, scoring=scoring, n_jobs=njobs))
+    return np.mean(cross_val_score(self.model, data[0], data[1], cv=nfold, scoring=scoring, n_jobs=njobs))</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.fit"><code class="name flex">
@@ -1143,11 +1034,10 @@ the ROC AUC metrics</p></section>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>x_train</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Training data</p>
-<p>y_train:array-like, sparse matrix
-Target data</p></section>
+<dd>Training data</dd>
+<dt><strong><code>y_train</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
+<dd>Target data</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1159,11 +1049,10 @@ Target data</p></section>
     Input
     ---------------------------
     x_train: array-like, sparse matrix
-    Training data
+        Training data
 
-    y_train:array-like, sparse matrix
-    Target data
-
+    y_train: array-like, sparse matrix
+        Target data
     &#34;&#34;&#34;
     if self.training_columns is not None:
         self.model.fit(x_train[self.training_columns], y_train)
@@ -1180,9 +1069,8 @@ of the model module</p>
 <h2 id="output">Output</h2>
 <dl>
 <dt><strong><code>str</code></strong></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Name of the model module</p></section>
+<dd>Name of the model module</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1195,7 +1083,7 @@ of the model module</p>
     Output
     ---------------------------
     str
-    Name of the model module
+        Name of the model module
     &#34;&#34;&#34;
     return self.model_string</code></pre>
 </details>
@@ -1208,15 +1096,9 @@ of the model module</p>
 <h2 id="output">Output</h2>
 <dl>
 <dt><strong><code>dict</code></strong></dt>
-<dd>&nbsp;</dd>
-<dt>Model (hyper-)parameter values. For</dt>
-<dt><strong><code>example</code></strong> :&ensp;<code>silent</code>, <code>n_jobs</code>, <code>objective</code>,</dt>
-<dd>&nbsp;</dd>
-<dt>random_state, eval_metric, tree_method,</dt>
-<dt>max_depth, learning_rate,</dt>
-<dt>n_estimators, gamma, min_child_weight,</dt>
-<dt><strong><code>subsample</code></strong>, <strong><code>colsample_bytree</code></strong></dt>
-<dd>&nbsp;</dd>
+<dd>Model hyper-parameter values. For
+example (XGBoost): max_depth, learning_rate,
+n_estimators, gamma, min_child_weight, &hellip;</dd>
 </dl></section>
 <details class="source">
 <summary>
@@ -1229,13 +1111,9 @@ of the model module</p>
     Output
     ------------------------------------
     dict
-    Model (hyper-)parameter values. For
-    example: silent, n_jobs, objective,
-    random_state, eval_metric, tree_method,
-    max_depth, learning_rate,
-    n_estimators, gamma, min_child_weight,
-    subsample, colsample_bytree
-
+        Model hyper-parameter values. For
+        example (XGBoost): max_depth, learning_rate,
+        n_estimators, gamma, min_child_weight, ...
     &#34;&#34;&#34;
     return self.model.get_params()</code></pre>
 </details>
@@ -1246,7 +1124,7 @@ of the model module</p>
 <dd>
 <section class="desc"><p>Get the original unwrapped model</p>
 <h2 id="output">Output</h2>
-<p>sklearn or xgboost model</p></section>
+<p>sklearn or XGBoost model</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1257,7 +1135,7 @@ of the model module</p>
 
     Output
     ---------------------------
-    sklearn or xgboost model
+    sklearn or XGBoost model
     &#34;&#34;&#34;
     return self.model</code></pre>
 </details>
@@ -1266,15 +1144,12 @@ of the model module</p>
 <span>def <span class="ident">get_training_columns</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Get the features used for the training process
-Output</p>
-<hr>
+<section class="desc"><p>Get the features used for the training process</p>
+<h2 id="output">Output</h2>
 <dl>
 <dt><strong><code>list</code></strong></dt>
-<dd>&nbsp;</dd>
-<dt>Contains the name of the features used for the training.</dt>
-<dt><strong><code>Example</code></strong> :&ensp;[<code>'dEdx'</code>, <code>'pT'</code>, <code>'ct'</code>]</dt>
-<dd>&nbsp;</dd>
+<dd>Contains the name of the features used for the training.
+Example: ['dEdx', 'pT', 'ct']</dd>
 </dl></section>
 <details class="source">
 <summary>
@@ -1283,12 +1158,12 @@ Output</p>
 <pre><code class="python">def get_training_columns(self):
     &#34;&#34;&#34;
     Get the features used for the training process
+
     Output
     ------------------------------------
     list
-    Contains the name of the features used for the training.
-    Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
+        Contains the name of the features used for the training.
+        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
     &#34;&#34;&#34;
 
     return self.training_columns</code></pre>
@@ -1302,9 +1177,8 @@ Output</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Name of the file in which the model is saved</p></section>
+<dd>Name of the file in which the model is saved</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1316,7 +1190,7 @@ Output</p>
     Input
     -----------------------------------------------------
     filename: str
-    Name of the file in which the model is saved
+        Name of the file in which the model is saved
     &#34;&#34;&#34;
     loaded_model = pickle.load(open(filename, &#39;rb&#39;))
     self.model = loaded_model.get_original_model()
@@ -1326,115 +1200,104 @@ Output</p>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.optimize_params_bayes"><code class="name flex">
-<span>def <span class="ident">optimize_params_bayes</span></span>(<span>self, data, hyperparams_ranges, metrics, nfold=5, init_points=5, n_iter=5)</span>
+<span>def <span class="ident">optimize_params_bayes</span></span>(<span>self, data, hyperparams_ranges, scoring, nfold=5, init_points=5, n_iter=5, njobs=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Perform Bayesian optimization</p>
+<section class="desc"><p>Perform Bayesian optimization and update the model hyper-parameters
+with the best ones</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Contains respectively: training
+<dd>Contains respectively: training
 set dataframe, training label array,
-test set dataframe, test label array</p>
-<dl>
+test set dataframe, test label array</dd>
 <dt><strong><code>hyperparams_ranges</code></strong> :&ensp;<code>dict</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Xgboost hyperparameter ranges(in tuples).
+<dd>Xgboost hyperparameter ranges(in tuples).
 For example:
 dict={
 'max_depth':(10,100)
 'learning_rate': (0.01,0.03)
-}</p>
-<dl>
-<dt><strong><code>metrics</code></strong> :&ensp;<code>string</code>, <code>callable</code> or <code>None</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>A string (see sklearn model evaluation
-documentation:
+}</dd>
+<dt><strong><code>scoring</code></strong> :&ensp;<code>string</code>, <code>callable</code> or <code>None</code></dt>
+<dd>A string (see sklearn model evaluation documentation:
 <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">https://scikit-learn.org/stable/modules/model_evaluation.html</a>)
-or a scorer callable object / function
-with signature scorer(estimator, X, y)
-which should return only a
-single value.</p>
-<dl>
+or a scorer callable object / function with signature scorer(estimator, X, y)
+which should return only a single value.
+In binary classification 'roc_auc' is suggested.
+In multi-classification one between ‘roc_auc_ovr’, ‘roc_auc_ovo’,
+‘roc_auc_ovr_weighted’ and ‘roc_auc_ovo_weighted’ is suggested.
+For more information see
+<a href="https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter">https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter</a></dd>
 <dt><strong><code>nfold</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Number of folds to calculate the cross validation error</p>
-<dl>
+<dd>Number of folds to calculate the cross validation error</dd>
 <dt><strong><code>init_points</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>How many steps of random exploration you want to perform.
-Random exploration can help by diversifying the exploration space</p>
-<h2 id="output">Output</h2>
-<dl>
-<dt><strong><code>dict</code></strong></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Contains the optimized parameters</p></section>
+<dd>How many steps of random exploration you want to perform.
+Random exploration can help by diversifying the exploration space</dd>
+<dt><strong><code>n_iter</code></strong> :&ensp;<code>int</code></dt>
+<dd>How many steps for bayesian optimization of the target function.
+Bigger n_iter results in better description of thetarget function</dd>
+<dt><strong><code>njobs</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
+<dd>Number of CPUs to perform computation used in the score evaluation
+with cross-validation. Set to -1 to use all CPUs</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def optimize_params_bayes(self, data, hyperparams_ranges, metrics, nfold=5, init_points=5,
-                          n_iter=5):
+<pre><code class="python">def optimize_params_bayes(self, data, hyperparams_ranges, scoring, nfold=5, init_points=5,
+                          n_iter=5, njobs=None):
     &#34;&#34;&#34;
-    Perform Bayesian optimization
+    Perform Bayesian optimization and update the model hyper-parameters
+    with the best ones
 
     Input
     ------------------------------------------------------
-
     data: list
-    Contains respectively: training
-    set dataframe, training label array,
-    test set dataframe, test label array
+        Contains respectively: training
+        set dataframe, training label array,
+        test set dataframe, test label array
 
     hyperparams_ranges: dict
-    Xgboost hyperparameter ranges(in tuples).
-    For example:
-    dict={
-        &#39;max_depth&#39;:(10,100)
-        &#39;learning_rate&#39;: (0.01,0.03)
-    }
+        Xgboost hyperparameter ranges(in tuples).
+        For example:
+        dict={
+            &#39;max_depth&#39;:(10,100)
+            &#39;learning_rate&#39;: (0.01,0.03)
+        }
 
-    metrics: string, callable or None
-    A string (see sklearn model evaluation
-    documentation:
-    https://scikit-learn.org/stable/modules/model_evaluation.html)
-    or a scorer callable object / function
-    with signature scorer(estimator, X, y)
-    which should return only a
-    single value.
+    scoring: string, callable or None
+        A string (see sklearn model evaluation documentation:
+        https://scikit-learn.org/stable/modules/model_evaluation.html)
+        or a scorer callable object / function with signature scorer(estimator, X, y)
+        which should return only a single value.
+        In binary classification &#39;roc_auc&#39; is suggested.
+        In multi-classification one between ‘roc_auc_ovr’, ‘roc_auc_ovo’,
+        ‘roc_auc_ovr_weighted’ and ‘roc_auc_ovo_weighted’ is suggested.
+        For more information see
+        https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter
 
     nfold: int
-    Number of folds to calculate the cross validation error
+        Number of folds to calculate the cross validation error
 
     init_points: int
-    How many steps of random exploration you want to perform.
-    Random exploration can help by diversifying the exploration space
+        How many steps of random exploration you want to perform.
+        Random exploration can help by diversifying the exploration space
 
+    n_iter: int
+        How many steps for bayesian optimization of the target function.
+        Bigger n_iter results in better description of thetarget function
 
-    Output
-    ---------------------------------------------------------
-    dict
-    Contains the optimized parameters
-
+    njobs: int or None
+        Number of CPUs to perform computation used in the score evaluation
+        with cross-validation. Set to -1 to use all CPUs
     &#34;&#34;&#34;
-
-    # get number of classes
-    n_classes = len(np.unique(data[1]))
-
     # just an helper function
     def hyperparams_crossvalidation(**kwargs):
-        return self.evaluate_hyperparams(data, kwargs, metrics, n_classes, nfold)
+        return self.evaluate_hyperparams(data, kwargs, scoring, nfold, njobs)
     print(&#39;&#39;)
 
-    optimizer = BayesianOptimization(f=hyperparams_crossvalidation,
-                                     pbounds=hyperparams_ranges, verbose=2, random_state=42)
+    optimizer = BayesianOptimization(f=hyperparams_crossvalidation, pbounds=hyperparams_ranges,
+                                     verbose=2, random_state=42)
     optimizer.maximize(init_points=init_points, n_iter=n_iter, acq=&#39;poi&#39;)
     print(&#39;&#39;)
 
@@ -1442,10 +1305,9 @@ Random exploration can help by diversifying the exploration space</p>
     max_params = {key: None for key in hyperparams_ranges.keys()}
     for key in max_params.keys():
         max_params[key] = optimizer.max[&#39;params&#39;][key]
-    print(&#39;Best target: {0:.6f}&#39;.format(optimizer.max[&#39;target&#39;]))
-    print(&#39;Best parameters: {}&#39;.format(max_params))
-    self.set_model_params(
-        {**self.model_params, **self.cast_model_params(max_params)})</code></pre>
+    print(f&#34;Best target: {optimizer.max[&#39;target&#39;]:.6f}&#34;)
+    print(f&#39;Best parameters: {max_params}&#39;)
+    self.set_model_params({**self.model_params, **self.cast_model_params(max_params)})</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.predict"><code class="name flex">
@@ -1456,20 +1318,18 @@ Random exploration can help by diversifying the exploration space</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>x_test</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>The input samples. Internally, its dtype
+<dd>The input samples. Internally, its dtype
 will be converted to dtype=np.float32. If a
 sparse matrix is provided, it will be converted
-to a sparse csr_matrix.</p>
-<dl>
+to a sparse csr_matrix.</dd>
 <dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
-<dd>&nbsp;</dd>
+<dd>Whether to output the raw untransformed margin value.</dd>
 </dl>
-<p>Whether to output the raw untransformed margin value.</p>
 <h2 id="output">Output</h2>
-<p>numpy array
-Model prediction</p></section>
+<dl>
+<dt><strong><code>pred</code></strong> :&ensp;<code>numpy_array</code></dt>
+<dd>Model predictions</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1481,33 +1341,33 @@ Model prediction</p></section>
     Input
     --------------------------------------
     x_test: array-like, sparse matrix
-    The input samples. Internally, its dtype
-    will be converted to dtype=np.float32. If a
-    sparse matrix is provided, it will be converted
-    to a sparse csr_matrix.
+        The input samples. Internally, its dtype
+        will be converted to dtype=np.float32. If a
+        sparse matrix is provided, it will be converted
+        to a sparse csr_matrix.
 
     output_margin: bool
-    Whether to output the raw untransformed margin value.
+        Whether to output the raw untransformed margin value.
 
     Output
     ---------------------------------------
-    numpy array
-    Model prediction
-
+    pred: numpy_array
+        Model predictions
     &#34;&#34;&#34;
     if self.training_columns is not None:
         x_test = x_test[self.training_columns]
 
-    if self.model_string == &#39;xgboost&#39;:
-        if output_margin:
-            pred = self.model.predict(x_test, output_margin=output_margin)
-        else:
-            pred = self.model.predict_proba(x_test)[:, 1]
-    if self.model_string == &#39;sklearn&#39;:
-        if output_margin:
+    if output_margin:
+        if self.model_string == &#39;xgboost&#39;:
+            pred = self.model.predict(x_test, True)
+        if self.model_string == &#39;sklearn&#39;:
             pred = self.model.decision_function(x_test).ravel()
-        else:
-            pred = self.model.predict_proba(x_test)[:, 1]
+    else:
+        pred = self.model.predict_proba(x_test)
+        # in case of binary classification return only the scores of
+        # the signal class
+        if pred.shape[1] &lt;= 2:
+            pred = pred[:, 1]
 
     return pred</code></pre>
 </details>
@@ -1520,15 +1380,9 @@ Model prediction</p></section>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>model_params</code></strong> :&ensp;<code>dict</code></dt>
-<dd>&nbsp;</dd>
-<dt>Model (hyper-)parameter values. For</dt>
-<dt><strong><code>example</code></strong> :&ensp;<code>silent</code>, <code>n_jobs</code>, <code>objective</code>,</dt>
-<dd>&nbsp;</dd>
-<dt>random_state, eval_metric, tree_method,</dt>
-<dt>max_depth, learning_rate,</dt>
-<dt>n_estimators, gamma, min_child_weight,</dt>
-<dt><strong><code>subsample</code></strong>, <strong><code>colsample_bytree</code></strong></dt>
-<dd>&nbsp;</dd>
+<dd>Model hyper-parameter values. For
+example (XGBoost): max_depth, learning_rate,
+n_estimators, gamma, min_child_weight, &hellip;</dd>
 </dl></section>
 <details class="source">
 <summary>
@@ -1541,13 +1395,9 @@ Model prediction</p></section>
     Input
     ------------------------------------
     model_params: dict
-    Model (hyper-)parameter values. For
-    example: silent, n_jobs, objective,
-    random_state, eval_metric, tree_method,
-    max_depth, learning_rate,
-    n_estimators, gamma, min_child_weight,
-    subsample, colsample_bytree
-
+        Model hyper-parameter values. For
+        example (XGBoost): max_depth, learning_rate,
+        n_estimators, gamma, min_child_weight, ...
     &#34;&#34;&#34;
     self.model_params = model_params
     self.model.set_params(**model_params)</code></pre>
@@ -1557,15 +1407,12 @@ Model prediction</p></section>
 <span>def <span class="ident">set_training_columns</span></span>(<span>self, training_columns)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Set the features used for the training process
-Input</p>
-<hr>
+<section class="desc"><p>Set the features used for the training process</p>
+<h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>training_columns</code></strong> :&ensp;<code>list</code></dt>
-<dd>&nbsp;</dd>
-<dt>Contains the name of the features used for the training.</dt>
-<dt><strong><code>Example</code></strong> :&ensp;[<code>'dEdx'</code>, <code>'pT'</code>, <code>'ct'</code>]</dt>
-<dd>&nbsp;</dd>
+<dd>Contains the name of the features used for the training.
+Example: ['dEdx', 'pT', 'ct']</dd>
 </dl></section>
 <details class="source">
 <summary>
@@ -1574,50 +1421,60 @@ Input</p>
 <pre><code class="python">def set_training_columns(self, training_columns):
     &#34;&#34;&#34;
     Set the features used for the training process
+
     Input
     ------------------------------------
     training_columns: list
-    Contains the name of the features used for the training.
-    Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
+        Contains the name of the features used for the training.
+        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
     &#34;&#34;&#34;
     self.training_columns = training_columns</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.train_test_model"><code class="name flex">
-<span>def <span class="ident">train_test_model</span></span>(<span>self, data)</span>
+<span>def <span class="ident">train_test_model</span></span>(<span>self, data, average='macro', multi_class_opt='raise')</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Perform the training and the testing of the model</p>
+<section class="desc"><p>Perform the training and the testing of the model. The model performance is estimated
+using the ROC AUC metric</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Contains respectively: training
+<dd>Contains respectively: training
 set dataframe, training label array,
-test set dataframe, test label array</p>
-<h2 id="output">Output</h2>
-<p>sklearn or xgboost trained model</p></section>
+test set dataframe, test label array</dd>
+<dt><strong><code>average</code></strong> :&ensp;<code>string</code></dt>
+<dd>Option for the average of ROC AUC scores used only in case of multi-classification.
+You can choose between 'macro' and 'weighted'. For more information see
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html#sklearn.metrics.roc_auc_score">https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html#sklearn.metrics.roc_auc_score</a></dd>
+<dt><strong><code>multi_class_opt</code></strong> :&ensp;<code>string</code></dt>
+<dd>Option to compute ROC AUC scores used only in case of multi-classification.
+The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def train_test_model(self, data):
+<pre><code class="python">def train_test_model(self, data, average=&#39;macro&#39;, multi_class_opt=&#39;raise&#39;):
     &#34;&#34;&#34;
-    Perform the training and the testing of the model
+    Perform the training and the testing of the model. The model performance is estimated
+    using the ROC AUC metric
 
     Input
     ----------------------------------------------
-
     data: list
-    Contains respectively: training
-    set dataframe, training label array,
-    test set dataframe, test label array
+        Contains respectively: training
+        set dataframe, training label array,
+        test set dataframe, test label array
 
-    Output
-    ---------------------------------------------
-    sklearn or xgboost trained model
+    average: string
+        Option for the average of ROC AUC scores used only in case of multi-classification.
+        You can choose between &#39;macro&#39; and &#39;weighted&#39;. For more information see
+        https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html#sklearn.metrics.roc_auc_score
+
+    multi_class_opt: string
+        Option to compute ROC AUC scores used only in case of multi-classification.
+        The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
     &#34;&#34;&#34;
 
     # get number of classes
@@ -1627,28 +1484,14 @@ test set dataframe, test label array</p>
     # final training with the optimized hyperparams
     print(&#39;Training the final model: ...&#39;, end=&#39;\r&#39;)
     self.fit(data[0], data[1])
-    print(&#39;{}&#39;.format(self.get_model_params()))
-    print(&#39;Training the final model: Done!\n&#39;)
+    print(&#39;Training the final model: Done!&#39;)
     print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
+    y_pred = self.predict(data[2], output_margin=False)
+    roc_score = roc_auc_score(data[3], y_pred, average=average, multi_class=multi_class_opt)
+    print(&#39;Testing the model: Done!&#39;)
 
-    y_pred = self.predict(data[2], output_margin=True)
-    if n_classes &lt;= 2:
-        roc_score = roc_auc_score(data[3], y_pred)
-    else:
-        # convert multi-class labels to multi-labels to obtain roc curves
-        y_test_multi = label_binarize(data[3], classes=range(n_classes))
-        fpr, tpr = {}, {}
-        for clas in range(n_classes):
-            fpr[clas], tpr[clas], _ = roc_curve(
-                y_test_multi[:, clas], y_pred[:, clas])
-        fpr[&#39;micro&#39;], tpr[&#39;micro&#39;], _ = roc_curve(
-            y_test_multi.ravel(), y_pred.ravel())
-        roc_score = auc(fpr[&#39;micro&#39;], tpr[&#39;micro&#39;])
-
-    print(&#39;Testing the model: Done!\n&#39;)
-
-    print(&#39;ROC_AUC_score: {}\n&#39;.format(roc_score))
-    print(&#39;==============================\n&#39;)</code></pre>
+    print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
+    print(&#39;==============================&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1695,7 +1538,7 @@ test set dataframe, test label array</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>

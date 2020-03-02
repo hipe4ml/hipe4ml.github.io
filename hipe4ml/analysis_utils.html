@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.2" />
+<meta name="generator" content="pdoc 0.7.5" />
 <title>hipe4ml.analysis_utils API documentation</title>
 <meta name="description" content="Module containing the analysis utils." />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
@@ -25,18 +25,18 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34; Module containing the analysis utils.
-    &#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;
+Module containing the analysis utils.
+&#34;&#34;&#34;
 
 import numpy as np
-from sklearn.model_selection import KFold
+from scipy.interpolate import InterpolatedUnivariateSpline
 from sklearn.preprocessing import label_binarize
-from sklearn.metrics import roc_auc_score
 
 
-def bdt_efficiency_array(y_truth, y_score, n_points=50):
+def bdt_efficiency_array(y_truth, y_score, n_points=50, keep_lower=False):
     &#34;&#34;&#34;
-    Calculate the BDT efficiency as a function of the score
+    Calculate the model efficiency as a function of the score
     threshold. The candidates for each class should be labeled
     with 0, ..., N. In case of binary classification, 0 should
     correspond to the background while 1 to the signal
@@ -44,28 +44,34 @@ def bdt_efficiency_array(y_truth, y_score, n_points=50):
     Input
     ------------------------------------------------
     y_truth: array
-    Training or test set labels. The candidates for each
-    class should be labeled with 0, ..., N.
-    In case of binary classification, 0 should
-    correspond to the background while 1 to the signal
+        Training or test set labels. The candidates for each
+        class should be labeled with 0, ..., N.
+        In case of binary classification, 0 should
+        correspond to the background while 1 to the signal
 
     y_score: array
-    Estimated probabilities or decision function.
+        Estimated probabilities or decision function.
 
     n_points: int
-    Number of points to be sampled
+        Number of points to be sampled
+
+    keep_lower: bool
+        If True compute the efficiency using the candidates with
+        score lower than the score threshold; otherwise using the
+        candidates with score higher than the score threshold.
 
     Output
     ------------------------------------------------
     efficiency: numpy array
-    Efficiency array as a function of the threshold value
-    Numpy array of numpy arrays in case of multi-classification
+        Efficiency as a function of the threshold value
+        Numpy array of numpy arrays in case of multi-classification
 
     threshold: numpy array
-    Threshold values array
-
-
+        Threshold values
     &#34;&#34;&#34;
+    operator = np.greater
+    if keep_lower:
+        operator = np.less
     # get number of classes
     n_classes = len(np.unique(y_truth))
 
@@ -79,7 +85,7 @@ def bdt_efficiency_array(y_truth, y_score, n_points=50):
 
         efficiency = np.empty((0, n_points))
         for thr in threshold:
-            n_sig_selected = np.sum(y_truth[y_score &gt; thr])
+            n_sig_selected = np.sum(y_truth[operator(y_score, thr)])
             efficiency = np.append(efficiency, [n_sig_selected/n_sig])
         efficiencies = efficiency
     else:
@@ -92,7 +98,7 @@ def bdt_efficiency_array(y_truth, y_score, n_points=50):
             efficiency = np.empty((0, n_points))
             for thr in threshold:
                 n_sig_selected = np.sum(
-                    y_truth_multi[:, clas][y_score[:, clas] &gt; thr])
+                    y_truth_multi[:, clas][operator(y_score[:, clas], thr)])
                 efficiency = np.append(efficiency, [n_sig_selected/n_sig])
             efficiencies.append(efficiency)
         efficiencies = np.array(efficiencies)
@@ -100,51 +106,43 @@ def bdt_efficiency_array(y_truth, y_score, n_points=50):
     return efficiencies, threshold
 
 
-def cross_val_roc_score_multiclass(model, training_df, y_training, n_classes, n_fold):
+def score_from_efficiency_array(y_truth, y_score, efficiency_selected, keep_lower=False):
     &#34;&#34;&#34;
-    Evaluate a score using the roc auc metric by cross validation for multiclass
-    classifiers
+    Return the score array corresponding to an external fixed efficiency
+    array.
 
     Input
-    ------------------------------------------------
-    model: xgboost or sklearn multiclass model
+    -----------------------------------------------
+    y_truth: array
+        Training or test set labels. The candidates for each
+        class should be labeled with 0, ..., N.
+        In case of binary classification, 0 should
+        correspond to the background while 1 to the signal
 
-    df_training: Pandas Dataframe
-    Training set dataframe
+    y_score: array
+        Estimated probabilities or decision function.
 
-    y_training: array
-    Training set labels. The candidates for each
-    class should be labeled with 0, ..., N.
+    keep_lower: bool
+        If True compute the efficiency using the candidates with
+        score lower than the score threshold; otherwise using the
+        candidates with score higher than the score threshold.
 
-    n_classes: int
-    Number of classes: should be greater than two. Otherwise
-    use the standard cross_val_score(sklearn) implementation
-
-    nfold: int
-    Number of folds to calculate the cross
-    validation error
+    efficiency_selected: list or array
+        Efficiency array along which calculate
+        the corresponding score array
 
     Output
-    ------------------------------------------------
-    mean: int
-    Average of the scores evaluated in the k-different folds
-
-
+    -----------------------------------------------
+    score_array: numpy array
+        Score array corresponding to efficiency_selected
     &#34;&#34;&#34;
-    scores = []
-    kfold = KFold(n_splits=n_fold, shuffle=True, random_state=42)
-    for index in kfold.split(training_df):
-        x_train = training_df.iloc[index[0]]
-        y_train = y_training[index[0]]
-        x_test = training_df.iloc[index[1]]
-        y_test = y_training[index[1]]
-        model.fit(x_train, y_train)
-        y_score = model.predict_proba(x_test)
-        y_test_multi = label_binarize(y_test, classes=range(n_classes))
-        score = roc_auc_score(y_test_multi, y_score, average=&#39;micro&#39;)
-        scores.append(score)
-    mean = np.mean(scores)
-    return mean</code></pre>
+    score_list = []
+    eff, score = bdt_efficiency_array(y_truth, y_score, n_points=1000, keep_lower=keep_lower)
+    for eff_val in efficiency_selected:
+        interp = InterpolatedUnivariateSpline(score, eff-eff_val)
+        score_list.append(interp.roots()[0])
+    score_array = np.array(score_list)
+    return score_array</code></pre>
 </details>
 </section>
 <section>
@@ -155,51 +153,44 @@ def cross_val_roc_score_multiclass(model, training_df, y_training, n_classes, n_
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="hipe4ml.analysis_utils.bdt_efficiency_array"><code class="name flex">
-<span>def <span class="ident">bdt_efficiency_array</span></span>(<span>y_truth, y_score, n_points=50)</span>
+<span>def <span class="ident">bdt_efficiency_array</span></span>(<span>y_truth, y_score, n_points=50, keep_lower=False)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate the BDT efficiency as a function of the score
+<section class="desc"><p>Calculate the model efficiency as a function of the score
 threshold. The candidates for each class should be labeled
 with 0, &hellip;, N. In case of binary classification, 0 should
 correspond to the background while 1 to the signal</p>
 <h2 id="input">Input</h2>
 <dl>
 <dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Training or test set labels. The candidates for each
+<dd>Training or test set labels. The candidates for each
 class should be labeled with 0, &hellip;, N.
 In case of binary classification, 0 should
-correspond to the background while 1 to the signal</p>
-<dl>
+correspond to the background while 1 to the signal</dd>
 <dt><strong><code>y_score</code></strong> :&ensp;<code>array</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Estimated probabilities or decision function.</p>
-<dl>
+<dd>Estimated probabilities or decision function.</dd>
 <dt><strong><code>n_points</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
+<dd>Number of points to be sampled</dd>
+<dt><strong><code>keep_lower</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True compute the efficiency using the candidates with
+score lower than the score threshold; otherwise using the
+candidates with score higher than the score threshold.</dd>
 </dl>
-<p>Number of points to be sampled</p>
 <h2 id="output">Output</h2>
 <dl>
 <dt><strong><code>efficiency</code></strong> :&ensp;<code>numpy</code> <code>array</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Efficiency array as a function of the threshold value
-Numpy array of numpy arrays in case of multi-classification</p>
-<dl>
+<dd>Efficiency as a function of the threshold value
+Numpy array of numpy arrays in case of multi-classification</dd>
 <dt><strong><code>threshold</code></strong> :&ensp;<code>numpy</code> <code>array</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Threshold values array</p></section>
+<dd>Threshold values</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def bdt_efficiency_array(y_truth, y_score, n_points=50):
+<pre><code class="python">def bdt_efficiency_array(y_truth, y_score, n_points=50, keep_lower=False):
     &#34;&#34;&#34;
-    Calculate the BDT efficiency as a function of the score
+    Calculate the model efficiency as a function of the score
     threshold. The candidates for each class should be labeled
     with 0, ..., N. In case of binary classification, 0 should
     correspond to the background while 1 to the signal
@@ -207,28 +198,34 @@ Numpy array of numpy arrays in case of multi-classification</p>
     Input
     ------------------------------------------------
     y_truth: array
-    Training or test set labels. The candidates for each
-    class should be labeled with 0, ..., N.
-    In case of binary classification, 0 should
-    correspond to the background while 1 to the signal
+        Training or test set labels. The candidates for each
+        class should be labeled with 0, ..., N.
+        In case of binary classification, 0 should
+        correspond to the background while 1 to the signal
 
     y_score: array
-    Estimated probabilities or decision function.
+        Estimated probabilities or decision function.
 
     n_points: int
-    Number of points to be sampled
+        Number of points to be sampled
+
+    keep_lower: bool
+        If True compute the efficiency using the candidates with
+        score lower than the score threshold; otherwise using the
+        candidates with score higher than the score threshold.
 
     Output
     ------------------------------------------------
     efficiency: numpy array
-    Efficiency array as a function of the threshold value
-    Numpy array of numpy arrays in case of multi-classification
+        Efficiency as a function of the threshold value
+        Numpy array of numpy arrays in case of multi-classification
 
     threshold: numpy array
-    Threshold values array
-
-
+        Threshold values
     &#34;&#34;&#34;
+    operator = np.greater
+    if keep_lower:
+        operator = np.less
     # get number of classes
     n_classes = len(np.unique(y_truth))
 
@@ -242,7 +239,7 @@ Numpy array of numpy arrays in case of multi-classification</p>
 
         efficiency = np.empty((0, n_points))
         for thr in threshold:
-            n_sig_selected = np.sum(y_truth[y_score &gt; thr])
+            n_sig_selected = np.sum(y_truth[operator(y_score, thr)])
             efficiency = np.append(efficiency, [n_sig_selected/n_sig])
         efficiencies = efficiency
     else:
@@ -255,7 +252,7 @@ Numpy array of numpy arrays in case of multi-classification</p>
             efficiency = np.empty((0, n_points))
             for thr in threshold:
                 n_sig_selected = np.sum(
-                    y_truth_multi[:, clas][y_score[:, clas] &gt; thr])
+                    y_truth_multi[:, clas][operator(y_score[:, clas], thr)])
                 efficiency = np.append(efficiency, [n_sig_selected/n_sig])
             efficiencies.append(efficiency)
         efficiencies = np.array(efficiencies)
@@ -263,93 +260,75 @@ Numpy array of numpy arrays in case of multi-classification</p>
     return efficiencies, threshold</code></pre>
 </details>
 </dd>
-<dt id="hipe4ml.analysis_utils.cross_val_roc_score_multiclass"><code class="name flex">
-<span>def <span class="ident">cross_val_roc_score_multiclass</span></span>(<span>model, training_df, y_training, n_classes, n_fold)</span>
+<dt id="hipe4ml.analysis_utils.score_from_efficiency_array"><code class="name flex">
+<span>def <span class="ident">score_from_efficiency_array</span></span>(<span>y_truth, y_score, efficiency_selected, keep_lower=False)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Evaluate a score using the roc auc metric by cross validation for multiclass
-classifiers</p>
+<section class="desc"><p>Return the score array corresponding to an external fixed efficiency
+array.</p>
 <h2 id="input">Input</h2>
 <dl>
-<dt><strong><code>model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn</code> <code>multiclass</code> <code>model</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>df_training</code></strong> :&ensp;<code>Pandas</code> <code>Dataframe</code></dt>
-<dd>&nbsp;</dd>
+<dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
+<dd>Training or test set labels. The candidates for each
+class should be labeled with 0, &hellip;, N.
+In case of binary classification, 0 should
+correspond to the background while 1 to the signal</dd>
+<dt><strong><code>y_score</code></strong> :&ensp;<code>array</code></dt>
+<dd>Estimated probabilities or decision function.</dd>
+<dt><strong><code>keep_lower</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True compute the efficiency using the candidates with
+score lower than the score threshold; otherwise using the
+candidates with score higher than the score threshold.</dd>
+<dt><strong><code>efficiency_selected</code></strong> :&ensp;<code>list</code> or <code>array</code></dt>
+<dd>Efficiency array along which calculate
+the corresponding score array</dd>
 </dl>
-<p>Training set dataframe</p>
-<dl>
-<dt><strong><code>y_training</code></strong> :&ensp;<code>array</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Training set labels. The candidates for each
-class should be labeled with 0, &hellip;, N.</p>
-<dl>
-<dt><strong><code>n_classes</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Number of classes: should be greater than two. Otherwise
-use the standard cross_val_score(sklearn) implementation</p>
-<dl>
-<dt><strong><code>nfold</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Number of folds to calculate the cross
-validation error</p>
 <h2 id="output">Output</h2>
 <dl>
-<dt><strong><code>mean</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Average of the scores evaluated in the k-different folds</p></section>
+<dt><strong><code>score_array</code></strong> :&ensp;<code>numpy</code> <code>array</code></dt>
+<dd>Score array corresponding to efficiency_selected</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def cross_val_roc_score_multiclass(model, training_df, y_training, n_classes, n_fold):
+<pre><code class="python">def score_from_efficiency_array(y_truth, y_score, efficiency_selected, keep_lower=False):
     &#34;&#34;&#34;
-    Evaluate a score using the roc auc metric by cross validation for multiclass
-    classifiers
+    Return the score array corresponding to an external fixed efficiency
+    array.
 
     Input
-    ------------------------------------------------
-    model: xgboost or sklearn multiclass model
+    -----------------------------------------------
+    y_truth: array
+        Training or test set labels. The candidates for each
+        class should be labeled with 0, ..., N.
+        In case of binary classification, 0 should
+        correspond to the background while 1 to the signal
 
-    df_training: Pandas Dataframe
-    Training set dataframe
+    y_score: array
+        Estimated probabilities or decision function.
 
-    y_training: array
-    Training set labels. The candidates for each
-    class should be labeled with 0, ..., N.
+    keep_lower: bool
+        If True compute the efficiency using the candidates with
+        score lower than the score threshold; otherwise using the
+        candidates with score higher than the score threshold.
 
-    n_classes: int
-    Number of classes: should be greater than two. Otherwise
-    use the standard cross_val_score(sklearn) implementation
-
-    nfold: int
-    Number of folds to calculate the cross
-    validation error
+    efficiency_selected: list or array
+        Efficiency array along which calculate
+        the corresponding score array
 
     Output
-    ------------------------------------------------
-    mean: int
-    Average of the scores evaluated in the k-different folds
-
-
+    -----------------------------------------------
+    score_array: numpy array
+        Score array corresponding to efficiency_selected
     &#34;&#34;&#34;
-    scores = []
-    kfold = KFold(n_splits=n_fold, shuffle=True, random_state=42)
-    for index in kfold.split(training_df):
-        x_train = training_df.iloc[index[0]]
-        y_train = y_training[index[0]]
-        x_test = training_df.iloc[index[1]]
-        y_test = y_training[index[1]]
-        model.fit(x_train, y_train)
-        y_score = model.predict_proba(x_test)
-        y_test_multi = label_binarize(y_test, classes=range(n_classes))
-        score = roc_auc_score(y_test_multi, y_score, average=&#39;micro&#39;)
-        scores.append(score)
-    mean = np.mean(scores)
-    return mean</code></pre>
+    score_list = []
+    eff, score = bdt_efficiency_array(y_truth, y_score, n_points=1000, keep_lower=keep_lower)
+    for eff_val in efficiency_selected:
+        interp = InterpolatedUnivariateSpline(score, eff-eff_val)
+        score_list.append(interp.roots()[0])
+    score_array = np.array(score_list)
+    return score_array</code></pre>
 </details>
 </dd>
 </dl>
@@ -371,14 +350,14 @@ validation error</p>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="hipe4ml.analysis_utils.bdt_efficiency_array" href="#hipe4ml.analysis_utils.bdt_efficiency_array">bdt_efficiency_array</a></code></li>
-<li><code><a title="hipe4ml.analysis_utils.cross_val_roc_score_multiclass" href="#hipe4ml.analysis_utils.cross_val_roc_score_multiclass">cross_val_roc_score_multiclass</a></code></li>
+<li><code><a title="hipe4ml.analysis_utils.score_from_efficiency_array" href="#hipe4ml.analysis_utils.score_from_efficiency_array">score_from_efficiency_array</a></code></li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>
