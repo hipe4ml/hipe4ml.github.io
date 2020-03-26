@@ -36,10 +36,12 @@ import numpy as np
 import pandas as pd
 import shap
 from mpl_toolkits.axes_grid1 import ImageGrid
-from sklearn.metrics import (auc, average_precision_score, roc_auc_score,
-                             precision_recall_curve, roc_curve, mean_squared_error)
-from sklearn.preprocessing import label_binarize
 from scipy.special import softmax
+from sklearn.metrics import (auc, average_precision_score, mean_squared_error,
+                             precision_recall_curve, roc_auc_score, roc_curve)
+from sklearn.preprocessing import label_binarize
+
+import hipe4ml.tree_handler
 
 
 def _plot_output(df_train, df_test, lims, bins, label, color, kwds):
@@ -60,7 +62,8 @@ def _plot_output(df_train, df_test, lims, bins, label, color, kwds):
         hist = hist * scale
 
     center = (bins[:-1] + bins[1:]) / 2
-    plt.errorbar(center, hist, yerr=err, fmt=&#39;o&#39;, c=color, label=f&#39;{label} pdf Test Set&#39;)
+    plt.errorbar(center, hist, yerr=err, fmt=&#39;o&#39;,
+                 c=color, label=f&#39;{label} pdf Test Set&#39;)
 
 
 def plot_output_train_test(model, data, bins=80, output_margin=True, labels=None, logscale=False, **kwds):
@@ -68,7 +71,7 @@ def plot_output_train_test(model, data, bins=80, output_margin=True, labels=None
     Plot the model output distributions for each class and output
     both for training and test set.
 
-    Input
+    Parameters
     ----------------------------------------
     model: hipe4ml model handler
 
@@ -102,9 +105,9 @@ def plot_output_train_test(model, data, bins=80, output_margin=True, labels=None
     **kwds
         Extra arguments are passed on to plt.hist()
 
-    Output
+    Returns
     ----------------------------------------
-    res: list of matplotlib.figure.Figure
+    out: matplotlib.figure.Figure or list of them
         Model output distributions for each class
     &#34;&#34;&#34;
     class_labels = np.unique(data[1])
@@ -113,29 +116,33 @@ def plot_output_train_test(model, data, bins=80, output_margin=True, labels=None
     prediction = []
     for xxx, yyy in ((data[0], data[1]), (data[2], data[3])):
         for class_lab in class_labels:
-            prediction.append(model.predict(xxx[yyy == class_lab], output_margin))
+            prediction.append(model.predict(
+                xxx[yyy == class_lab], output_margin))
 
     low = min(np.min(d) for d in prediction)
     high = max(np.max(d) for d in prediction)
     low_high = (low, high)
 
-    res = []
     # only one figure in case of binary classification
     if n_classes &lt;= 2:
+        res = plt.figure()
         labels = [&#39;Signal&#39;, &#39;Background&#39;] if labels is None else labels
         colors = [&#39;b&#39;, &#39;r&#39;]
-        res.append(plt.figure())
         for i_class, (label, color) in enumerate(zip(labels, colors)):
-            _plot_output(prediction[i_class], prediction[i_class+2], low_high, bins, label, color, kwds)
+            _plot_output(
+                prediction[i_class], prediction[i_class+2], low_high, bins, label, color, kwds)
         if logscale:
             plt.yscale(&#39;log&#39;)
         plt.xlabel(&#39;BDT output&#39;, fontsize=13, ha=&#39;right&#39;, position=(1, 20))
-        plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13, horizontalalignment=&#39;left&#39;)
+        plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13,
+                   horizontalalignment=&#39;left&#39;)
         plt.legend(frameon=False, fontsize=12, loc=&#39;best&#39;)
 
     # n figures in case of multi-classification with n classes
     else:
-        labels = [f&#39;class{class_lab}&#39; for class_lab in class_labels] if labels is None else labels
+        res = []
+        labels = [
+            f&#39;class{class_lab}&#39; for class_lab in class_labels] if labels is None else labels
         cmap = plt.cm.get_cmap(&#39;tab10&#39;)
         colors = [cmap(i_class) for i_class in range(len(labels))]
         for output, out_label in zip(class_labels, labels):
@@ -145,29 +152,27 @@ def plot_output_train_test(model, data, bins=80, output_margin=True, labels=None
                              label, color, kwds)
             if logscale:
                 plt.yscale(&#39;log&#39;)
-            plt.xlabel(f&#39;BDT output for {out_label}&#39;, fontsize=13, ha=&#39;right&#39;, position=(1, 20))
-            plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13, horizontalalignment=&#39;left&#39;)
+            plt.xlabel(f&#39;BDT output for {out_label}&#39;,
+                       fontsize=13, ha=&#39;right&#39;, position=(1, 20))
+            plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13,
+                       horizontalalignment=&#39;left&#39;)
             plt.legend(frameon=False, fontsize=12, loc=&#39;best&#39;)
 
     return res
 
-
-def plot_distr(list_of_df, column=None, figsize=None, bins=50, log=False, labels=None, alpha=0.5):
+# flake8: noqa: C901
+def plot_distr(data_list, column=None, bins=50, labels=None, colors=None, **kwds):  # pylint: disable=too-many-branches
     &#34;&#34;&#34;
     Draw histograms comparing the distributions of each class.
 
-    Input
+    Parameters
     -----------------------------------------
-    list_of_df: list
-        Contains a dataframe for each class
+    data_list: TreeHandler, pandas.Dataframe or list of them
+        Contains a TreeHandler or a dataframe for each class
 
-    column: list
+    column: str or list of them
         Contains the name of the features you want to plot
         Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
-    figsize: list
-        The size in inches of the figure to create. Uses the value in
-        matplotlib.rcParams by default.
 
     bins: int or sequence of scalars or str
         If bins is an int, it defines the number of equal-width
@@ -176,21 +181,32 @@ def plot_distr(list_of_df, column=None, figsize=None, bins=50, log=False, labels
         bin edges, including the rightmost edge, allowing for
         non-uniform bin widths.
 
-    log: bool
-        If True enable log scale plot
-
-    labels: list
+    labels: str or list of them
         Contains the labels to be displayed in the legend
         If None the labels are class1, class2, ..., classN
 
-    alpha: float
-        Value between 0 and 1, tune the histogram transparency
+    colors: str or list of them
+        List of the colors to be used to fill the histograms
 
-    Output
+    **kwds:
+        extra arguments are passed on to pandas.DataFrame.hist():
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html
+
+    Returns
     -----------------------------------------
-    axes: numpy array of matplotlib.figure.Figure
+    out: numpy array of matplotlib.axes.AxesSubplot
         Distributions of the features for each class
     &#34;&#34;&#34;
+    list_of_df = []
+    if not isinstance(data_list, list):
+        data_list = [data_list]
+        labels = [labels]
+        colors = [colors]
+    if isinstance(data_list[0], hipe4ml.tree_handler.TreeHandler):
+        for handl in data_list:
+            list_of_df.append(handl.get_data_frame())
+    else:
+        list_of_df = data_list
 
     if column is not None:
         if not isinstance(column, (list, np.ndarray, pd.Index)):
@@ -198,36 +214,36 @@ def plot_distr(list_of_df, column=None, figsize=None, bins=50, log=False, labels
         for dfm in list_of_df:
             dfm = dfm[column]
 
-    if figsize is None:
-        figsize = [20, 15]
-
     if labels is None:
         labels = [f&#39;class{i_class}&#39; for i_class, _ in enumerate(list_of_df)]
 
-    for i_class, (dfm, lab) in enumerate(zip(list_of_df, labels)):
+    if colors is None:
+        colors = [None for i_class, _ in enumerate(list_of_df)]
+
+    for i_class, (dfm, lab, col) in enumerate(zip(list_of_df, labels, colors)):
         if i_class == 0:
-            axes = dfm.hist(column=column, alpha=alpha, bins=bins, figsize=figsize, label=lab,
-                            density=True, grid=False, log=log)
+            axes = dfm.hist(column=column, bins=bins, label=lab, color=col, **kwds)
             axes = axes.flatten()
             axes = axes[:len(column)]
         else:
-            dfm.hist(ax=axes, column=column, alpha=alpha, bins=bins, figsize=figsize, label=lab,
-                     density=True, grid=False, log=log)
+            dfm.hist(ax=axes, column=column, bins=bins, label=lab, color=col, **kwds)
     for axs in axes:
-        axs.set_ylabel(&#39;Counts (arb. units)&#39;)
+        axs.set_ylabel(&#39;Counts&#39;)
     axes[-1].legend(loc=&#39;best&#39;)
+    if len(axes) == 1:
+        axes = axes[0]
     return axes
 
 
-def plot_corr(list_of_df, columns, labels=None, **kwds):
+def plot_corr(data_list, columns, labels=None, **kwds):
     &#34;&#34;&#34;
     Calculate pairwise correlation between features for
     each class (e.g. signal and background in case of binary
     classification)
 
-    Input
+    Parameters
     -----------------------------------------------
-    list_of_df: list
+    data_list: list
         Contains dataframes for each class
 
     columns: list
@@ -240,12 +256,17 @@ def plot_corr(list_of_df, columns, labels=None, **kwds):
 
     **kwds: extra arguments are passed on to DataFrame.corr()
 
-    Output
+    Returns
     ------------------------------------------------
-    fig: list of matplotlib.figure.Figure
+    out: matplotlib.figure.Figure or list of them
         Correlations between the features for each class
     &#34;&#34;&#34;
-
+    list_of_df = []
+    if isinstance(data_list[0], hipe4ml.tree_handler.TreeHandler):
+        for handl in data_list:
+            list_of_df.append(handl.get_data_frame())
+    else:
+        list_of_df = data_list
     corr_mat = []
     for dfm in list_of_df:
         dfm = dfm[columns]
@@ -253,18 +274,23 @@ def plot_corr(list_of_df, columns, labels=None, **kwds):
 
     if labels is None:
         labels = []
-        if len(corr_mat) &gt; 2:
+        if len(corr_mat) != 2:
             for i_mat, _ in enumerate(corr_mat):
                 labels.append(f&#39;class{i_mat}&#39;)
         else:
             labels.append(&#39;Signal&#39;)
             labels.append(&#39;Background&#39;)
 
-    fig = []
+    res = []
     for mat, lab in zip(corr_mat, labels):
-        fig.append(plt.figure(figsize=(8, 7)))
-        grid = ImageGrid(fig[-1], 111, axes_pad=0.15, nrows_ncols=(1, 1), share_all=True,
-                         cbar_location=&#39;right&#39;, cbar_mode=&#39;single&#39;, cbar_size=&#39;7%&#39;, cbar_pad=0.15)
+        if len(corr_mat) &lt; 2:
+            res = plt.figure(figsize=(8, 7))
+            grid = ImageGrid(res, 111, axes_pad=0.15, nrows_ncols=(1, 1), share_all=True,
+                             cbar_location=&#39;right&#39;, cbar_mode=&#39;single&#39;, cbar_size=&#39;7%&#39;, cbar_pad=0.15)
+        else:
+            res.append(plt.figure(figsize=(8, 7)))
+            grid = ImageGrid(res[-1], 111, axes_pad=0.15, nrows_ncols=(1, 1), share_all=True,
+                             cbar_location=&#39;right&#39;, cbar_mode=&#39;single&#39;, cbar_size=&#39;7%&#39;, cbar_pad=0.15)
 
         opts = {&#39;cmap&#39;: plt.get_cmap(
             &#39;coolwarm&#39;), &#39;vmin&#39;: -1, &#39;vmax&#39;: +1, &#39;snap&#39;: True}
@@ -290,7 +316,7 @@ def plot_corr(list_of_df, columns, labels=None, **kwds):
 
         axs.cax.colorbar(heatmap)
 
-    return fig
+    return res
 
 
 def plot_bdt_eff(threshold, eff_sig):
@@ -298,7 +324,7 @@ def plot_bdt_eff(threshold, eff_sig):
     Plot the model efficiency calculated with the function
     bdt_efficiency_array() in analysis_utils
 
-    Input
+    Parameters
     -----------------------------------
     threshold: array
         Score threshold array
@@ -306,9 +332,9 @@ def plot_bdt_eff(threshold, eff_sig):
     eff_sig: array
         model efficiency array
 
-    Output
+    Returns
     -----------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing model efficiency as a
         function of the threshold score
     &#34;&#34;&#34;
@@ -319,7 +345,6 @@ def plot_bdt_eff(threshold, eff_sig):
     plt.ylabel(&#39;Efficiency&#39;)
     plt.title(&#39;Efficiency vs Score&#39;)
     plt.grid()
-
     return res
 
 
@@ -334,9 +359,11 @@ def _plot_roc_ovr(y_truth, y_score, n_classes, labels, average):
     for i_class, lab in enumerate(labels):
         fpr, tpr, _ = roc_curve(y_truth_multi[:, i_class], y_score[:, i_class])
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, lw=1, c=cmap(i_class), label=f&#39;{lab} Vs Rest (AUC = {roc_auc:.4f})&#39;)
+        plt.plot(fpr, tpr, lw=1, c=cmap(i_class),
+                 label=f&#39;{lab} Vs Rest (AUC = {roc_auc:.4f})&#39;)
     # compute global ROC AUC
-    global_roc_auc = roc_auc_score(y_truth, y_score, average=average, multi_class=&#39;ovr&#39;)
+    global_roc_auc = roc_auc_score(
+        y_truth, y_score, average=average, multi_class=&#39;ovr&#39;)
     plt.plot([], [], &#39; &#39;, label=f&#39;Average OvR ROC AUC: {global_roc_auc:.4f}&#39;)
 
 
@@ -361,7 +388,8 @@ def _plot_roc_ovo(y_truth, y_score, n_classes, labels, average):
         plt.plot(fpr_b, tpr_b, lw=1, c=cmap(i_comb), alpha=0.6,
                  label=f&#39;{labels[bbb]} Vs {labels[aaa]} (AUC = {roc_auc_b:.4f})&#39;)
     # compute global ROC AUC
-    global_roc_auc = roc_auc_score(y_truth, y_score, average=average, multi_class=&#39;ovo&#39;)
+    global_roc_auc = roc_auc_score(
+        y_truth, y_score, average=average, multi_class=&#39;ovo&#39;)
     plt.plot([], [], &#39; &#39;, label=f&#39;Average OvO ROC AUC: {global_roc_auc:.4f}&#39;)
 
 
@@ -369,7 +397,7 @@ def plot_roc(y_truth, y_score, pos_label=None, labels=None, average=&#39;macro&#
     &#34;&#34;&#34;
     Calculate and plot the roc curve
 
-    Input
+    Parameters
     -------------------------------------
     y_truth: array
         True labels for the belonging class. If labels are not
@@ -401,9 +429,9 @@ def plot_roc(y_truth, y_score, pos_label=None, labels=None, average=&#39;macro&#
         Option to compute ROC curves used only in case of multi-classification.
         The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the roc curves
     &#34;&#34;&#34;
     # get number of classes
@@ -457,7 +485,7 @@ def plot_roc_train_test(y_truth_test, y_score_test, y_truth_train, y_score_train
     &#34;&#34;&#34;
     Calculate and plot the roc curve for test and train sets
 
-    Input
+    Parameters
     -------------------------------------
     y_truth_test: array
         True labels for the belonging class of the test set. If labels
@@ -500,14 +528,16 @@ def plot_roc_train_test(y_truth_test, y_score_test, y_truth_train, y_score_train
         Option to compute ROC curves used only in case of multi-classification.
         The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the roc curves
     &#34;&#34;&#34;
     # call plot_roc for both train and test sets
-    fig_test = plot_roc(y_truth_test, y_score_test, pos_label, labels, average, multi_class_opt)
-    fig_train = plot_roc(y_truth_train, y_score_train, pos_label, labels, average, multi_class_opt)
+    fig_test = plot_roc(y_truth_test, y_score_test,
+                        pos_label, labels, average, multi_class_opt)
+    fig_train = plot_roc(y_truth_train, y_score_train,
+                         pos_label, labels, average, multi_class_opt)
     axes_test = fig_test.get_axes()[0]
     axes_train = fig_train.get_axes()[0]
 
@@ -545,7 +575,7 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
     each feature. The calculation is performed on a subsample of the
     input training/test set
 
-    Input
+    Parameters
     -------------------------------------------
     df_in: Pandas dataframe
         Training or test set dataframe
@@ -571,9 +601,9 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
         Run fast and approximat roughly the SHAP values. For more information
         see https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_values
 
-    Output
+    Returns
     -------------------------------------------
-    res: list of matplotlib.figure.Figure
+    out: matplotlib.figure.Figure or list of them
         Plots with shap feature importance
     &#34;&#34;&#34;
     class_labels, class_counts = np.unique(y_truth, return_counts=True)
@@ -590,16 +620,19 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
     explainer = shap.TreeExplainer(model.get_original_model())
     shap_values = explainer.shap_values(df_subs, approximate=approximate)
 
-    res = []
     if n_classes &lt;= 2:
-        res.append(plt.figure(figsize=(18, 9)))
-        shap.summary_plot(shap_values, df_subs, plot_size=(18, 9), class_names=labels, show=False)
+        res = plt.figure(figsize=(18, 9))
+        shap.summary_plot(shap_values, df_subs, plot_size=(
+            18, 9), class_names=labels, show=False)
     else:
+        res = []
         for i_class in range(n_classes):
             res.append(plt.figure(figsize=(18, 9)))
-            shap.summary_plot(shap_values[i_class], df_subs, plot_size=(18, 9), class_names=labels, show=False)
+            shap.summary_plot(shap_values[i_class], df_subs, plot_size=(
+                18, 9), class_names=labels, show=False)
         res.append(plt.figure(figsize=(18, 9)))
-        shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;, plot_size=(18, 9), class_names=labels, show=False)
+        shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;,
+                          plot_size=(18, 9), class_names=labels, show=False)
 
     return res
 
@@ -607,7 +640,7 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
 def plot_precision_recall(y_truth, y_score, labels=None, pos_label=None):
     &#34;&#34;&#34; Plot precision recall curve
 
-    Input
+    Parameters
     -------------------------------------
     y_truth: array
         True labels for the belonging class. If labels are not
@@ -621,9 +654,9 @@ def plot_precision_recall(y_truth, y_score, labels=None, pos_label=None):
         if y_true is in {0, 1, ..., N}, pos_label is set to 1,
         otherwise an error will be raised.
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the precision recall curves
     &#34;&#34;&#34;
     # get number of classes
@@ -676,7 +709,7 @@ def plot_precision_recall(y_truth, y_score, labels=None, pos_label=None):
 def plot_learning_curves(model, data, n_points=10):
     &#34;&#34;&#34; Plot learning curves
 
-    Input
+    Parameters
     -------------------------------------
     model: hipe4ml model_handler
 
@@ -688,9 +721,9 @@ def plot_learning_curves(model, data, n_points=10):
     n_points: int
         Number of points used to sample the learning curves
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the learning curves
     &#34;&#34;&#34;
 
@@ -732,16 +765,16 @@ def plot_learning_curves(model, data, n_points=10):
 <dd>
 <section class="desc"><p>Plot the model efficiency calculated with the function
 bdt_efficiency_array() in analysis_utils</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>threshold</code></strong> :&ensp;<code>array</code></dt>
 <dd>Score threshold array</dd>
 <dt><strong><code>eff_sig</code></strong> :&ensp;<code>array</code></dt>
 <dd>model efficiency array</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing model efficiency as a
 function of the threshold score</dd>
 </dl></section>
@@ -754,7 +787,7 @@ function of the threshold score</dd>
     Plot the model efficiency calculated with the function
     bdt_efficiency_array() in analysis_utils
 
-    Input
+    Parameters
     -----------------------------------
     threshold: array
         Score threshold array
@@ -762,9 +795,9 @@ function of the threshold score</dd>
     eff_sig: array
         model efficiency array
 
-    Output
+    Returns
     -----------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing model efficiency as a
         function of the threshold score
     &#34;&#34;&#34;
@@ -775,20 +808,19 @@ function of the threshold score</dd>
     plt.ylabel(&#39;Efficiency&#39;)
     plt.title(&#39;Efficiency vs Score&#39;)
     plt.grid()
-
     return res</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.plot_utils.plot_corr"><code class="name flex">
-<span>def <span class="ident">plot_corr</span></span>(<span>list_of_df, columns, labels=None, **kwds)</span>
+<span>def <span class="ident">plot_corr</span></span>(<span>data_list, columns, labels=None, **kwds)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Calculate pairwise correlation between features for
 each class (e.g. signal and background in case of binary
 classification)</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>list_of_df</code></strong> :&ensp;<code>list</code></dt>
+<dt><strong><code>data_list</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains dataframes for each class</dd>
 <dt><strong><code>columns</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the name of the features you want to plot
@@ -799,24 +831,24 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 <dt><strong><code>**kwds</code></strong> :&ensp;<code>extra</code> <code>arguments</code> <code>are</code> <code>passed</code> <code>on</code> <code>to</code> <code>DataFrame.corr</code>()</dt>
 <dd>&nbsp;</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>fig</code></strong> :&ensp;<code>list</code> of <code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code> or <code>list</code> of <code>them</code></dt>
 <dd>Correlations between the features for each class</dd>
 </dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def plot_corr(list_of_df, columns, labels=None, **kwds):
+<pre><code class="python">def plot_corr(data_list, columns, labels=None, **kwds):
     &#34;&#34;&#34;
     Calculate pairwise correlation between features for
     each class (e.g. signal and background in case of binary
     classification)
 
-    Input
+    Parameters
     -----------------------------------------------
-    list_of_df: list
+    data_list: list
         Contains dataframes for each class
 
     columns: list
@@ -829,12 +861,17 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 
     **kwds: extra arguments are passed on to DataFrame.corr()
 
-    Output
+    Returns
     ------------------------------------------------
-    fig: list of matplotlib.figure.Figure
+    out: matplotlib.figure.Figure or list of them
         Correlations between the features for each class
     &#34;&#34;&#34;
-
+    list_of_df = []
+    if isinstance(data_list[0], hipe4ml.tree_handler.TreeHandler):
+        for handl in data_list:
+            list_of_df.append(handl.get_data_frame())
+    else:
+        list_of_df = data_list
     corr_mat = []
     for dfm in list_of_df:
         dfm = dfm[columns]
@@ -842,18 +879,23 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 
     if labels is None:
         labels = []
-        if len(corr_mat) &gt; 2:
+        if len(corr_mat) != 2:
             for i_mat, _ in enumerate(corr_mat):
                 labels.append(f&#39;class{i_mat}&#39;)
         else:
             labels.append(&#39;Signal&#39;)
             labels.append(&#39;Background&#39;)
 
-    fig = []
+    res = []
     for mat, lab in zip(corr_mat, labels):
-        fig.append(plt.figure(figsize=(8, 7)))
-        grid = ImageGrid(fig[-1], 111, axes_pad=0.15, nrows_ncols=(1, 1), share_all=True,
-                         cbar_location=&#39;right&#39;, cbar_mode=&#39;single&#39;, cbar_size=&#39;7%&#39;, cbar_pad=0.15)
+        if len(corr_mat) &lt; 2:
+            res = plt.figure(figsize=(8, 7))
+            grid = ImageGrid(res, 111, axes_pad=0.15, nrows_ncols=(1, 1), share_all=True,
+                             cbar_location=&#39;right&#39;, cbar_mode=&#39;single&#39;, cbar_size=&#39;7%&#39;, cbar_pad=0.15)
+        else:
+            res.append(plt.figure(figsize=(8, 7)))
+            grid = ImageGrid(res[-1], 111, axes_pad=0.15, nrows_ncols=(1, 1), share_all=True,
+                             cbar_location=&#39;right&#39;, cbar_mode=&#39;single&#39;, cbar_size=&#39;7%&#39;, cbar_pad=0.15)
 
         opts = {&#39;cmap&#39;: plt.get_cmap(
             &#39;coolwarm&#39;), &#39;vmin&#39;: -1, &#39;vmax&#39;: +1, &#39;snap&#39;: True}
@@ -879,63 +921,57 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 
         axs.cax.colorbar(heatmap)
 
-    return fig</code></pre>
+    return res</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.plot_utils.plot_distr"><code class="name flex">
-<span>def <span class="ident">plot_distr</span></span>(<span>list_of_df, column=None, figsize=None, bins=50, log=False, labels=None, alpha=0.5)</span>
+<span>def <span class="ident">plot_distr</span></span>(<span>data_list, column=None, bins=50, labels=None, colors=None, **kwds)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Draw histograms comparing the distributions of each class.</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>list_of_df</code></strong> :&ensp;<code>list</code></dt>
-<dd>Contains a dataframe for each class</dd>
-<dt><strong><code>column</code></strong> :&ensp;<code>list</code></dt>
+<dt><strong><code>data_list</code></strong> :&ensp;<code>TreeHandler</code>, <code>pandas.Dataframe</code> or <code>list</code> of <code>them</code></dt>
+<dd>Contains a TreeHandler or a dataframe for each class</dd>
+<dt><strong><code>column</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>them</code></dt>
 <dd>Contains the name of the features you want to plot
 Example: ['dEdx', 'pT', 'ct']</dd>
-<dt><strong><code>figsize</code></strong> :&ensp;<code>list</code></dt>
-<dd>The size in inches of the figure to create. Uses the value in
-matplotlib.rcParams by default.</dd>
 <dt><strong><code>bins</code></strong> :&ensp;<code>int</code> or <code>sequence</code> of <code>scalars</code> or <code>str</code></dt>
 <dd>If bins is an int, it defines the number of equal-width
 bins in the given range (10, by default). If bins is a
 sequence, it defines a monotonically increasing array of
 bin edges, including the rightmost edge, allowing for
 non-uniform bin widths.</dd>
-<dt><strong><code>log</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True enable log scale plot</dd>
-<dt><strong><code>labels</code></strong> :&ensp;<code>list</code></dt>
+<dt><strong><code>labels</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>them</code></dt>
 <dd>Contains the labels to be displayed in the legend
 If None the labels are class1, class2, &hellip;, classN</dd>
-<dt><strong><code>alpha</code></strong> :&ensp;<code>float</code></dt>
-<dd>Value between 0 and 1, tune the histogram transparency</dd>
+<dt><strong><code>colors</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>them</code></dt>
+<dd>List of the colors to be used to fill the histograms</dd>
 </dl>
-<h2 id="output">Output</h2>
+<p>**kwds:
+extra arguments are passed on to pandas.DataFrame.hist():
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html</a></p>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>axes</code></strong> :&ensp;<code>numpy</code> <code>array</code> of <code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>numpy</code> <code>array</code> of <code>matplotlib.axes.AxesSubplot</code></dt>
 <dd>Distributions of the features for each class</dd>
 </dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def plot_distr(list_of_df, column=None, figsize=None, bins=50, log=False, labels=None, alpha=0.5):
+<pre><code class="python">def plot_distr(data_list, column=None, bins=50, labels=None, colors=None, **kwds):  # pylint: disable=too-many-branches
     &#34;&#34;&#34;
     Draw histograms comparing the distributions of each class.
 
-    Input
+    Parameters
     -----------------------------------------
-    list_of_df: list
-        Contains a dataframe for each class
+    data_list: TreeHandler, pandas.Dataframe or list of them
+        Contains a TreeHandler or a dataframe for each class
 
-    column: list
+    column: str or list of them
         Contains the name of the features you want to plot
         Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
-
-    figsize: list
-        The size in inches of the figure to create. Uses the value in
-        matplotlib.rcParams by default.
 
     bins: int or sequence of scalars or str
         If bins is an int, it defines the number of equal-width
@@ -944,21 +980,32 @@ If None the labels are class1, class2, &hellip;, classN</dd>
         bin edges, including the rightmost edge, allowing for
         non-uniform bin widths.
 
-    log: bool
-        If True enable log scale plot
-
-    labels: list
+    labels: str or list of them
         Contains the labels to be displayed in the legend
         If None the labels are class1, class2, ..., classN
 
-    alpha: float
-        Value between 0 and 1, tune the histogram transparency
+    colors: str or list of them
+        List of the colors to be used to fill the histograms
 
-    Output
+    **kwds:
+        extra arguments are passed on to pandas.DataFrame.hist():
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html
+
+    Returns
     -----------------------------------------
-    axes: numpy array of matplotlib.figure.Figure
+    out: numpy array of matplotlib.axes.AxesSubplot
         Distributions of the features for each class
     &#34;&#34;&#34;
+    list_of_df = []
+    if not isinstance(data_list, list):
+        data_list = [data_list]
+        labels = [labels]
+        colors = [colors]
+    if isinstance(data_list[0], hipe4ml.tree_handler.TreeHandler):
+        for handl in data_list:
+            list_of_df.append(handl.get_data_frame())
+    else:
+        list_of_df = data_list
 
     if column is not None:
         if not isinstance(column, (list, np.ndarray, pd.Index)):
@@ -966,24 +1013,24 @@ If None the labels are class1, class2, &hellip;, classN</dd>
         for dfm in list_of_df:
             dfm = dfm[column]
 
-    if figsize is None:
-        figsize = [20, 15]
-
     if labels is None:
         labels = [f&#39;class{i_class}&#39; for i_class, _ in enumerate(list_of_df)]
 
-    for i_class, (dfm, lab) in enumerate(zip(list_of_df, labels)):
+    if colors is None:
+        colors = [None for i_class, _ in enumerate(list_of_df)]
+
+    for i_class, (dfm, lab, col) in enumerate(zip(list_of_df, labels, colors)):
         if i_class == 0:
-            axes = dfm.hist(column=column, alpha=alpha, bins=bins, figsize=figsize, label=lab,
-                            density=True, grid=False, log=log)
+            axes = dfm.hist(column=column, bins=bins, label=lab, color=col, **kwds)
             axes = axes.flatten()
             axes = axes[:len(column)]
         else:
-            dfm.hist(ax=axes, column=column, alpha=alpha, bins=bins, figsize=figsize, label=lab,
-                     density=True, grid=False, log=log)
+            dfm.hist(ax=axes, column=column, bins=bins, label=lab, color=col, **kwds)
     for axs in axes:
-        axs.set_ylabel(&#39;Counts (arb. units)&#39;)
+        axs.set_ylabel(&#39;Counts&#39;)
     axes[-1].legend(loc=&#39;best&#39;)
+    if len(axes) == 1:
+        axes = axes[0]
     return axes</code></pre>
 </details>
 </dd>
@@ -994,7 +1041,7 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 <section class="desc"><p>Calculate the feature importance using the shap violin plot for
 each feature. The calculation is performed on a subsample of the
 input training/test set</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>df_in</code></strong> :&ensp;<code>Pandas</code> <code>dataframe</code></dt>
 <dd>Training or test set dataframe</dd>
@@ -1015,9 +1062,9 @@ in a given class used instead</dd>
 <dd>Run fast and approximat roughly the SHAP values. For more information
 see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_values">https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_values</a></dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>list</code> of <code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code> or <code>list</code> of <code>them</code></dt>
 <dd>Plots with shap feature importance</dd>
 </dl></section>
 <details class="source">
@@ -1030,7 +1077,7 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
     each feature. The calculation is performed on a subsample of the
     input training/test set
 
-    Input
+    Parameters
     -------------------------------------------
     df_in: Pandas dataframe
         Training or test set dataframe
@@ -1056,9 +1103,9 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
         Run fast and approximat roughly the SHAP values. For more information
         see https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_values
 
-    Output
+    Returns
     -------------------------------------------
-    res: list of matplotlib.figure.Figure
+    out: matplotlib.figure.Figure or list of them
         Plots with shap feature importance
     &#34;&#34;&#34;
     class_labels, class_counts = np.unique(y_truth, return_counts=True)
@@ -1075,16 +1122,19 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
     explainer = shap.TreeExplainer(model.get_original_model())
     shap_values = explainer.shap_values(df_subs, approximate=approximate)
 
-    res = []
     if n_classes &lt;= 2:
-        res.append(plt.figure(figsize=(18, 9)))
-        shap.summary_plot(shap_values, df_subs, plot_size=(18, 9), class_names=labels, show=False)
+        res = plt.figure(figsize=(18, 9))
+        shap.summary_plot(shap_values, df_subs, plot_size=(
+            18, 9), class_names=labels, show=False)
     else:
+        res = []
         for i_class in range(n_classes):
             res.append(plt.figure(figsize=(18, 9)))
-            shap.summary_plot(shap_values[i_class], df_subs, plot_size=(18, 9), class_names=labels, show=False)
+            shap.summary_plot(shap_values[i_class], df_subs, plot_size=(
+                18, 9), class_names=labels, show=False)
         res.append(plt.figure(figsize=(18, 9)))
-        shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;, plot_size=(18, 9), class_names=labels, show=False)
+        shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;,
+                          plot_size=(18, 9), class_names=labels, show=False)
 
     return res</code></pre>
 </details>
@@ -1094,7 +1144,7 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
 </code></dt>
 <dd>
 <section class="desc"><p>Plot learning curves</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>model</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>model_handler</code></dt>
 <dd>&nbsp;</dd>
@@ -1105,9 +1155,9 @@ test set dataframe, test label array</dd>
 <dt><strong><code>n_points</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of points used to sample the learning curves</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the learning curves</dd>
 </dl></section>
 <details class="source">
@@ -1117,7 +1167,7 @@ test set dataframe, test label array</dd>
 <pre><code class="python">def plot_learning_curves(model, data, n_points=10):
     &#34;&#34;&#34; Plot learning curves
 
-    Input
+    Parameters
     -------------------------------------
     model: hipe4ml model_handler
 
@@ -1129,9 +1179,9 @@ test set dataframe, test label array</dd>
     n_points: int
         Number of points used to sample the learning curves
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the learning curves
     &#34;&#34;&#34;
 
@@ -1166,7 +1216,7 @@ test set dataframe, test label array</dd>
 <dd>
 <section class="desc"><p>Plot the model output distributions for each class and output
 both for training and test set.</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>model</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>model</code> <code>handler</code></dt>
 <dd>&nbsp;</dd>
@@ -1195,9 +1245,9 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 <dt><strong><code>**kwds</code></strong></dt>
 <dd>Extra arguments are passed on to plt.hist()</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>list</code> of <code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code> or <code>list</code> of <code>them</code></dt>
 <dd>Model output distributions for each class</dd>
 </dl></section>
 <details class="source">
@@ -1209,7 +1259,7 @@ If None the labels are class1, class2, &hellip;, classN</dd>
     Plot the model output distributions for each class and output
     both for training and test set.
 
-    Input
+    Parameters
     ----------------------------------------
     model: hipe4ml model handler
 
@@ -1243,9 +1293,9 @@ If None the labels are class1, class2, &hellip;, classN</dd>
     **kwds
         Extra arguments are passed on to plt.hist()
 
-    Output
+    Returns
     ----------------------------------------
-    res: list of matplotlib.figure.Figure
+    out: matplotlib.figure.Figure or list of them
         Model output distributions for each class
     &#34;&#34;&#34;
     class_labels = np.unique(data[1])
@@ -1254,29 +1304,33 @@ If None the labels are class1, class2, &hellip;, classN</dd>
     prediction = []
     for xxx, yyy in ((data[0], data[1]), (data[2], data[3])):
         for class_lab in class_labels:
-            prediction.append(model.predict(xxx[yyy == class_lab], output_margin))
+            prediction.append(model.predict(
+                xxx[yyy == class_lab], output_margin))
 
     low = min(np.min(d) for d in prediction)
     high = max(np.max(d) for d in prediction)
     low_high = (low, high)
 
-    res = []
     # only one figure in case of binary classification
     if n_classes &lt;= 2:
+        res = plt.figure()
         labels = [&#39;Signal&#39;, &#39;Background&#39;] if labels is None else labels
         colors = [&#39;b&#39;, &#39;r&#39;]
-        res.append(plt.figure())
         for i_class, (label, color) in enumerate(zip(labels, colors)):
-            _plot_output(prediction[i_class], prediction[i_class+2], low_high, bins, label, color, kwds)
+            _plot_output(
+                prediction[i_class], prediction[i_class+2], low_high, bins, label, color, kwds)
         if logscale:
             plt.yscale(&#39;log&#39;)
         plt.xlabel(&#39;BDT output&#39;, fontsize=13, ha=&#39;right&#39;, position=(1, 20))
-        plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13, horizontalalignment=&#39;left&#39;)
+        plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13,
+                   horizontalalignment=&#39;left&#39;)
         plt.legend(frameon=False, fontsize=12, loc=&#39;best&#39;)
 
     # n figures in case of multi-classification with n classes
     else:
-        labels = [f&#39;class{class_lab}&#39; for class_lab in class_labels] if labels is None else labels
+        res = []
+        labels = [
+            f&#39;class{class_lab}&#39; for class_lab in class_labels] if labels is None else labels
         cmap = plt.cm.get_cmap(&#39;tab10&#39;)
         colors = [cmap(i_class) for i_class in range(len(labels))]
         for output, out_label in zip(class_labels, labels):
@@ -1286,8 +1340,10 @@ If None the labels are class1, class2, &hellip;, classN</dd>
                              label, color, kwds)
             if logscale:
                 plt.yscale(&#39;log&#39;)
-            plt.xlabel(f&#39;BDT output for {out_label}&#39;, fontsize=13, ha=&#39;right&#39;, position=(1, 20))
-            plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13, horizontalalignment=&#39;left&#39;)
+            plt.xlabel(f&#39;BDT output for {out_label}&#39;,
+                       fontsize=13, ha=&#39;right&#39;, position=(1, 20))
+            plt.ylabel(&#39;Counts (arb. units)&#39;, fontsize=13,
+                       horizontalalignment=&#39;left&#39;)
             plt.legend(frameon=False, fontsize=12, loc=&#39;best&#39;)
 
     return res</code></pre>
@@ -1298,7 +1354,7 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Plot precision recall curve</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
 <dd>True labels for the belonging class. If labels are not
@@ -1310,9 +1366,9 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 if y_true is in {0, 1, &hellip;, N}, pos_label is set to 1,
 otherwise an error will be raised.</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the precision recall curves</dd>
 </dl></section>
 <details class="source">
@@ -1322,7 +1378,7 @@ otherwise an error will be raised.</dd>
 <pre><code class="python">def plot_precision_recall(y_truth, y_score, labels=None, pos_label=None):
     &#34;&#34;&#34; Plot precision recall curve
 
-    Input
+    Parameters
     -------------------------------------
     y_truth: array
         True labels for the belonging class. If labels are not
@@ -1336,9 +1392,9 @@ otherwise an error will be raised.</dd>
         if y_true is in {0, 1, ..., N}, pos_label is set to 1,
         otherwise an error will be raised.
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the precision recall curves
     &#34;&#34;&#34;
     # get number of classes
@@ -1393,7 +1449,7 @@ otherwise an error will be raised.</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Calculate and plot the roc curve</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
 <dd>True labels for the belonging class. If labels are not
@@ -1420,9 +1476,9 @@ You can choose between 'macro' and 'weighted'. For more information see
 <dd>Option to compute ROC curves used only in case of multi-classification.
 The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the roc curves</dd>
 </dl></section>
 <details class="source">
@@ -1433,7 +1489,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
     &#34;&#34;&#34;
     Calculate and plot the roc curve
 
-    Input
+    Parameters
     -------------------------------------
     y_truth: array
         True labels for the belonging class. If labels are not
@@ -1465,9 +1521,9 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
         Option to compute ROC curves used only in case of multi-classification.
         The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the roc curves
     &#34;&#34;&#34;
     # get number of classes
@@ -1521,7 +1577,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Calculate and plot the roc curve for test and train sets</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>y_truth_test</code></strong> :&ensp;<code>array</code></dt>
 <dd 0_="0," 1_="1," N class="..,">True labels for the belonging class of the test set. If labels
@@ -1555,9 +1611,9 @@ You can choose between 'macro' and 'weighted'. For more information see
 <dd>Option to compute ROC curves used only in case of multi-classification.
 The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>res</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the roc curves</dd>
 </dl></section>
 <details class="source">
@@ -1569,7 +1625,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
     &#34;&#34;&#34;
     Calculate and plot the roc curve for test and train sets
 
-    Input
+    Parameters
     -------------------------------------
     y_truth_test: array
         True labels for the belonging class of the test set. If labels
@@ -1612,14 +1668,16 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
         Option to compute ROC curves used only in case of multi-classification.
         The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
 
-    Output
+    Returns
     -------------------------------------
-    res: matplotlib.figure.Figure
+    out: matplotlib.figure.Figure
         Plot containing the roc curves
     &#34;&#34;&#34;
     # call plot_roc for both train and test sets
-    fig_test = plot_roc(y_truth_test, y_score_test, pos_label, labels, average, multi_class_opt)
-    fig_train = plot_roc(y_truth_train, y_score_train, pos_label, labels, average, multi_class_opt)
+    fig_test = plot_roc(y_truth_test, y_score_test,
+                        pos_label, labels, average, multi_class_opt)
+    fig_train = plot_roc(y_truth_train, y_score_train,
+                         pos_label, labels, average, multi_class_opt)
     axes_test = fig_test.get_axes()[0]
     axes_train = fig_train.get_axes()[0]
 

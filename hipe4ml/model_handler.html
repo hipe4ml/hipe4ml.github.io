@@ -39,6 +39,8 @@ from bayes_opt import BayesianOptimization
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import cross_val_score
 
+import hipe4ml.tree_handler
+
 
 class ModelHandler:
     &#34;&#34;&#34;
@@ -46,7 +48,7 @@ class ModelHandler:
     build a new model with common methods. Currently only XGBoost
     (through it&#39;s sklearn interface) and sklearn models are supported.
 
-    Input
+    Parameters
     -------------------------------------------------
     input_model: xgboost or sklearn model
 
@@ -64,6 +66,7 @@ class ModelHandler:
         self.model = input_model
         self.training_columns = training_columns
         self.model_params = model_params
+        self._n_classes = None
 
         if self.model is not None:
             self.model_string = inspect.getmodule(self.model).__name__.partition(&#39;.&#39;)[0]
@@ -75,7 +78,7 @@ class ModelHandler:
         &#34;&#34;&#34;
         Set the model (hyper-)parameters
 
-        Input
+        Parameters
         ------------------------------------
         model_params: dict
             Model hyper-parameter values. For
@@ -89,9 +92,9 @@ class ModelHandler:
         &#34;&#34;&#34;
         Get the model (hyper-)parameters
 
-        Output
+        Returns
         ------------------------------------
-        dict
+        out: dict
             Model hyper-parameter values. For
             example (XGBoost): max_depth, learning_rate,
             n_estimators, gamma, min_child_weight, ...
@@ -102,7 +105,7 @@ class ModelHandler:
         &#34;&#34;&#34;
         Set the features used for the training process
 
-        Input
+        Parameters
         ------------------------------------
         training_columns: list
             Contains the name of the features used for the training.
@@ -114,10 +117,10 @@ class ModelHandler:
         &#34;&#34;&#34;
         Get the features used for the training process
 
-        Output
+        Returns
         ------------------------------------
-        list
-            Contains the name of the features used for the training.
+        out: list
+            Names of the features used for the training.
             Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
         &#34;&#34;&#34;
 
@@ -127,9 +130,9 @@ class ModelHandler:
         &#34;&#34;&#34;
         Get the original unwrapped model
 
-        Output
+        Returns
         ---------------------------
-        sklearn or XGBoost model
+        out: sklearn or XGBoost model
         &#34;&#34;&#34;
         return self.model
 
@@ -138,18 +141,29 @@ class ModelHandler:
         Get the string containing the name
         of the model module
 
-        Output
+        Returns
         ---------------------------
-        str
+        out: str
             Name of the model module
         &#34;&#34;&#34;
         return self.model_string
+
+    def get_n_classes(self):
+        &#34;&#34;&#34;
+        Get the number of classes
+
+        Returns
+        ---------------------------
+        out: int
+            Number of classes
+        &#34;&#34;&#34;
+        return self._n_classes
 
     def fit(self, x_train, y_train):
         &#34;&#34;&#34;
         Fit Model
 
-        Input
+        Parameters
         ---------------------------
         x_train: array-like, sparse matrix
             Training data
@@ -157,6 +171,8 @@ class ModelHandler:
         y_train: array-like, sparse matrix
             Target data
         &#34;&#34;&#34;
+        n_classes = len(np.unique(y_train))
+        self._n_classes = n_classes
         if self.training_columns is not None:
             self.model.fit(x_train[self.training_columns], y_train)
         else:
@@ -166,22 +182,21 @@ class ModelHandler:
         &#34;&#34;&#34;
         Return model prediction for the array x_test
 
-        Input
+        Parameters
         --------------------------------------
-        x_test: array-like, sparse matrix
-            The input samples. Internally, its dtype
-            will be converted to dtype=np.float32. If a
-            sparse matrix is provided, it will be converted
-            to a sparse csr_matrix.
+        x_test: hipe4ml tree_handler, array-like, sparse matrix
+            The input sample.
 
         output_margin: bool
             Whether to output the raw untransformed margin value.
 
-        Output
+        Returns
         ---------------------------------------
-        pred: numpy_array
+        out: numpy array
             Model predictions
         &#34;&#34;&#34;
+        if isinstance(x_test, hipe4ml.tree_handler.TreeHandler):
+            x_test = x_test.get_data_frame()
         if self.training_columns is not None:
             x_test = x_test[self.training_columns]
 
@@ -204,7 +219,7 @@ class ModelHandler:
         Perform the training and the testing of the model. The model performance is estimated
         using the ROC AUC metric
 
-        Input
+        Parameters
         ----------------------------------------------
         data: list
             Contains respectively: training
@@ -223,6 +238,7 @@ class ModelHandler:
 
         # get number of classes
         n_classes = len(np.unique(data[1]))
+        self._n_classes = n_classes
         print(&#39;Number of detected classes:&#39;, n_classes)
 
         # final training with the optimized hyperparams
@@ -241,7 +257,7 @@ class ModelHandler:
         &#34;&#34;&#34;
         Calculate the cross-validation score for a set of hyper-parameters
 
-        Input
+        Parameters
         ------------------------------------------
         data: list
             Contains respectively: training
@@ -267,9 +283,9 @@ class ModelHandler:
             Number of CPUs to use to perform computation.
             Set to -1 to use all CPUs
 
-        Output
+        Returns
         ---------------------------------------------------------
-        float
+        out: float
             Cross validation score evaluated using
             the ROC AUC metrics
         &#34;&#34;&#34;
@@ -287,7 +303,7 @@ class ModelHandler:
         Perform Bayesian optimization and update the model hyper-parameters
         with the best ones
 
-        Input
+        Parameters
         ------------------------------------------------------
         data: list
             Contains respectively: training
@@ -351,7 +367,7 @@ class ModelHandler:
         Check if each model parameter is defined as integer
         and change the parameter dictionary consequently
 
-        Input
+        Parameters
         -----------------------------------------------------
         params: dict
             Hyperparameter values. For
@@ -359,9 +375,9 @@ class ModelHandler:
             n_estimators, gamma, min_child_weight,
             subsample, colsample_bytree
 
-        Output
+        Returns
         -----------------------------------------------------
-        params: dict
+        out: dict
             Hyperparameter values updated
         &#34;&#34;&#34;
         for key in params.keys():
@@ -375,7 +391,7 @@ class ModelHandler:
         file. Only for xgboost models it is also given
         the possibility to save them into a .model file
 
-        Input
+        Parameters
         -----------------------------------------------------
         filename: str
             Name of the file in which the model is saved
@@ -395,7 +411,7 @@ class ModelHandler:
         &#34;&#34;&#34;
         Save the model handler into a pickle file
 
-        Input
+        Parameters
         -----------------------------------------------------
         filename: str
             Name of the file in which the model is saved
@@ -406,7 +422,7 @@ class ModelHandler:
         &#34;&#34;&#34;
         Load a model handler saved into a pickle file
 
-        Input
+        Parameters
         -----------------------------------------------------
         filename: str
             Name of the file in which the model is saved
@@ -435,7 +451,7 @@ class ModelHandler:
 <section class="desc"><p>Class used for wrapping the models from different ML libraries to
 build a new model with common methods. Currently only XGBoost
 (through it's sklearn interface) and sklearn models are supported.</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>input_model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn</code> <code>model</code></dt>
 <dd>&nbsp;</dd>
@@ -457,7 +473,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
     build a new model with common methods. Currently only XGBoost
     (through it&#39;s sklearn interface) and sklearn models are supported.
 
-    Input
+    Parameters
     -------------------------------------------------
     input_model: xgboost or sklearn model
 
@@ -475,6 +491,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         self.model = input_model
         self.training_columns = training_columns
         self.model_params = model_params
+        self._n_classes = None
 
         if self.model is not None:
             self.model_string = inspect.getmodule(self.model).__name__.partition(&#39;.&#39;)[0]
@@ -486,7 +503,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Set the model (hyper-)parameters
 
-        Input
+        Parameters
         ------------------------------------
         model_params: dict
             Model hyper-parameter values. For
@@ -500,9 +517,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Get the model (hyper-)parameters
 
-        Output
+        Returns
         ------------------------------------
-        dict
+        out: dict
             Model hyper-parameter values. For
             example (XGBoost): max_depth, learning_rate,
             n_estimators, gamma, min_child_weight, ...
@@ -513,7 +530,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Set the features used for the training process
 
-        Input
+        Parameters
         ------------------------------------
         training_columns: list
             Contains the name of the features used for the training.
@@ -525,10 +542,10 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Get the features used for the training process
 
-        Output
+        Returns
         ------------------------------------
-        list
-            Contains the name of the features used for the training.
+        out: list
+            Names of the features used for the training.
             Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
         &#34;&#34;&#34;
 
@@ -538,9 +555,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Get the original unwrapped model
 
-        Output
+        Returns
         ---------------------------
-        sklearn or XGBoost model
+        out: sklearn or XGBoost model
         &#34;&#34;&#34;
         return self.model
 
@@ -549,18 +566,29 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         Get the string containing the name
         of the model module
 
-        Output
+        Returns
         ---------------------------
-        str
+        out: str
             Name of the model module
         &#34;&#34;&#34;
         return self.model_string
+
+    def get_n_classes(self):
+        &#34;&#34;&#34;
+        Get the number of classes
+
+        Returns
+        ---------------------------
+        out: int
+            Number of classes
+        &#34;&#34;&#34;
+        return self._n_classes
 
     def fit(self, x_train, y_train):
         &#34;&#34;&#34;
         Fit Model
 
-        Input
+        Parameters
         ---------------------------
         x_train: array-like, sparse matrix
             Training data
@@ -568,6 +596,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         y_train: array-like, sparse matrix
             Target data
         &#34;&#34;&#34;
+        n_classes = len(np.unique(y_train))
+        self._n_classes = n_classes
         if self.training_columns is not None:
             self.model.fit(x_train[self.training_columns], y_train)
         else:
@@ -577,22 +607,21 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Return model prediction for the array x_test
 
-        Input
+        Parameters
         --------------------------------------
-        x_test: array-like, sparse matrix
-            The input samples. Internally, its dtype
-            will be converted to dtype=np.float32. If a
-            sparse matrix is provided, it will be converted
-            to a sparse csr_matrix.
+        x_test: hipe4ml tree_handler, array-like, sparse matrix
+            The input sample.
 
         output_margin: bool
             Whether to output the raw untransformed margin value.
 
-        Output
+        Returns
         ---------------------------------------
-        pred: numpy_array
+        out: numpy array
             Model predictions
         &#34;&#34;&#34;
+        if isinstance(x_test, hipe4ml.tree_handler.TreeHandler):
+            x_test = x_test.get_data_frame()
         if self.training_columns is not None:
             x_test = x_test[self.training_columns]
 
@@ -615,7 +644,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         Perform the training and the testing of the model. The model performance is estimated
         using the ROC AUC metric
 
-        Input
+        Parameters
         ----------------------------------------------
         data: list
             Contains respectively: training
@@ -634,6 +663,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
         # get number of classes
         n_classes = len(np.unique(data[1]))
+        self._n_classes = n_classes
         print(&#39;Number of detected classes:&#39;, n_classes)
 
         # final training with the optimized hyperparams
@@ -652,7 +682,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Calculate the cross-validation score for a set of hyper-parameters
 
-        Input
+        Parameters
         ------------------------------------------
         data: list
             Contains respectively: training
@@ -678,9 +708,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             Number of CPUs to use to perform computation.
             Set to -1 to use all CPUs
 
-        Output
+        Returns
         ---------------------------------------------------------
-        float
+        out: float
             Cross validation score evaluated using
             the ROC AUC metrics
         &#34;&#34;&#34;
@@ -698,7 +728,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         Perform Bayesian optimization and update the model hyper-parameters
         with the best ones
 
-        Input
+        Parameters
         ------------------------------------------------------
         data: list
             Contains respectively: training
@@ -762,7 +792,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         Check if each model parameter is defined as integer
         and change the parameter dictionary consequently
 
-        Input
+        Parameters
         -----------------------------------------------------
         params: dict
             Hyperparameter values. For
@@ -770,9 +800,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             n_estimators, gamma, min_child_weight,
             subsample, colsample_bytree
 
-        Output
+        Returns
         -----------------------------------------------------
-        params: dict
+        out: dict
             Hyperparameter values updated
         &#34;&#34;&#34;
         for key in params.keys():
@@ -786,7 +816,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         file. Only for xgboost models it is also given
         the possibility to save them into a .model file
 
-        Input
+        Parameters
         -----------------------------------------------------
         filename: str
             Name of the file in which the model is saved
@@ -806,7 +836,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Save the model handler into a pickle file
 
-        Input
+        Parameters
         -----------------------------------------------------
         filename: str
             Name of the file in which the model is saved
@@ -817,7 +847,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         Load a model handler saved into a pickle file
 
-        Input
+        Parameters
         -----------------------------------------------------
         filename: str
             Name of the file in which the model is saved
@@ -836,7 +866,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 <dd>
 <section class="desc"><p>Check if each model parameter is defined as integer
 and change the parameter dictionary consequently</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>params</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Hyperparameter values. For
@@ -844,9 +874,9 @@ example: max_depth, learning_rate,
 n_estimators, gamma, min_child_weight,
 subsample, colsample_bytree</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>params</code></strong> :&ensp;<code>dict</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Hyperparameter values updated</dd>
 </dl></section>
 <details class="source">
@@ -858,7 +888,7 @@ subsample, colsample_bytree</dd>
     Check if each model parameter is defined as integer
     and change the parameter dictionary consequently
 
-    Input
+    Parameters
     -----------------------------------------------------
     params: dict
         Hyperparameter values. For
@@ -866,9 +896,9 @@ subsample, colsample_bytree</dd>
         n_estimators, gamma, min_child_weight,
         subsample, colsample_bytree
 
-    Output
+    Returns
     -----------------------------------------------------
-    params: dict
+    out: dict
         Hyperparameter values updated
     &#34;&#34;&#34;
     for key in params.keys():
@@ -882,7 +912,7 @@ subsample, colsample_bytree</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Save the model handler into a pickle file</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the file in which the model is saved</dd>
@@ -895,7 +925,7 @@ subsample, colsample_bytree</dd>
     &#34;&#34;&#34;
     Save the model handler into a pickle file
 
-    Input
+    Parameters
     -----------------------------------------------------
     filename: str
         Name of the file in which the model is saved
@@ -910,7 +940,7 @@ subsample, colsample_bytree</dd>
 <section class="desc"><p>Save the trained model into a pickle
 file. Only for xgboost models it is also given
 the possibility to save them into a .model file</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the file in which the model is saved</dd>
@@ -927,7 +957,7 @@ the possibility to save them into a .model file</p>
     file. Only for xgboost models it is also given
     the possibility to save them into a .model file
 
-    Input
+    Parameters
     -----------------------------------------------------
     filename: str
         Name of the file in which the model is saved
@@ -949,7 +979,7 @@ the possibility to save them into a .model file</p>
 </code></dt>
 <dd>
 <section class="desc"><p>Calculate the cross-validation score for a set of hyper-parameters</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains respectively: training
@@ -971,9 +1001,9 @@ which should return only a single value</dd>
 <dd>Number of CPUs to use to perform computation.
 Set to -1 to use all CPUs</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>float</code></strong></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>float</code></dt>
 <dd>Cross validation score evaluated using
 the ROC AUC metrics</dd>
 </dl></section>
@@ -985,7 +1015,7 @@ the ROC AUC metrics</dd>
     &#34;&#34;&#34;
     Calculate the cross-validation score for a set of hyper-parameters
 
-    Input
+    Parameters
     ------------------------------------------
     data: list
         Contains respectively: training
@@ -1011,9 +1041,9 @@ the ROC AUC metrics</dd>
         Number of CPUs to use to perform computation.
         Set to -1 to use all CPUs
 
-    Output
+    Returns
     ---------------------------------------------------------
-    float
+    out: float
         Cross validation score evaluated using
         the ROC AUC metrics
     &#34;&#34;&#34;
@@ -1031,7 +1061,7 @@ the ROC AUC metrics</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Fit Model</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>x_train</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
 <dd>Training data</dd>
@@ -1046,7 +1076,7 @@ the ROC AUC metrics</dd>
     &#34;&#34;&#34;
     Fit Model
 
-    Input
+    Parameters
     ---------------------------
     x_train: array-like, sparse matrix
         Training data
@@ -1054,6 +1084,8 @@ the ROC AUC metrics</dd>
     y_train: array-like, sparse matrix
         Target data
     &#34;&#34;&#34;
+    n_classes = len(np.unique(y_train))
+    self._n_classes = n_classes
     if self.training_columns is not None:
         self.model.fit(x_train[self.training_columns], y_train)
     else:
@@ -1066,9 +1098,9 @@ the ROC AUC metrics</dd>
 <dd>
 <section class="desc"><p>Get the string containing the name
 of the model module</p>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>str</code></strong></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the model module</dd>
 </dl></section>
 <details class="source">
@@ -1080,9 +1112,9 @@ of the model module</p>
     Get the string containing the name
     of the model module
 
-    Output
+    Returns
     ---------------------------
-    str
+    out: str
         Name of the model module
     &#34;&#34;&#34;
     return self.model_string</code></pre>
@@ -1093,9 +1125,9 @@ of the model module</p>
 </code></dt>
 <dd>
 <section class="desc"><p>Get the model (hyper-)parameters</p>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>dict</code></strong></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Model hyper-parameter values. For
 example (XGBoost): max_depth, learning_rate,
 n_estimators, gamma, min_child_weight, &hellip;</dd>
@@ -1108,9 +1140,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
     &#34;&#34;&#34;
     Get the model (hyper-)parameters
 
-    Output
+    Returns
     ------------------------------------
-    dict
+    out: dict
         Model hyper-parameter values. For
         example (XGBoost): max_depth, learning_rate,
         n_estimators, gamma, min_child_weight, ...
@@ -1118,13 +1150,42 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
     return self.model.get_params()</code></pre>
 </details>
 </dd>
+<dt id="hipe4ml.model_handler.ModelHandler.get_n_classes"><code class="name flex">
+<span>def <span class="ident">get_n_classes</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get the number of classes</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of classes</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_n_classes(self):
+    &#34;&#34;&#34;
+    Get the number of classes
+
+    Returns
+    ---------------------------
+    out: int
+        Number of classes
+    &#34;&#34;&#34;
+    return self._n_classes</code></pre>
+</details>
+</dd>
 <dt id="hipe4ml.model_handler.ModelHandler.get_original_model"><code class="name flex">
 <span>def <span class="ident">get_original_model</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Get the original unwrapped model</p>
-<h2 id="output">Output</h2>
-<p>sklearn or XGBoost model</p></section>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>sklearn</code> or <code>XGBoost</code> <code>model</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1133,9 +1194,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
     &#34;&#34;&#34;
     Get the original unwrapped model
 
-    Output
+    Returns
     ---------------------------
-    sklearn or XGBoost model
+    out: sklearn or XGBoost model
     &#34;&#34;&#34;
     return self.model</code></pre>
 </details>
@@ -1145,10 +1206,10 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Get the features used for the training process</p>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>list</code></strong></dt>
-<dd>Contains the name of the features used for the training.
+<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
+<dd>Names of the features used for the training.
 Example: ['dEdx', 'pT', 'ct']</dd>
 </dl></section>
 <details class="source">
@@ -1159,10 +1220,10 @@ Example: ['dEdx', 'pT', 'ct']</dd>
     &#34;&#34;&#34;
     Get the features used for the training process
 
-    Output
+    Returns
     ------------------------------------
-    list
-        Contains the name of the features used for the training.
+    out: list
+        Names of the features used for the training.
         Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
     &#34;&#34;&#34;
 
@@ -1174,7 +1235,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Load a model handler saved into a pickle file</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the file in which the model is saved</dd>
@@ -1187,7 +1248,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
     &#34;&#34;&#34;
     Load a model handler saved into a pickle file
 
-    Input
+    Parameters
     -----------------------------------------------------
     filename: str
         Name of the file in which the model is saved
@@ -1205,7 +1266,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 <dd>
 <section class="desc"><p>Perform Bayesian optimization and update the model hyper-parameters
 with the best ones</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains respectively: training
@@ -1250,7 +1311,7 @@ with cross-validation. Set to -1 to use all CPUs</dd>
     Perform Bayesian optimization and update the model hyper-parameters
     with the best ones
 
-    Input
+    Parameters
     ------------------------------------------------------
     data: list
         Contains respectively: training
@@ -1315,19 +1376,16 @@ with cross-validation. Set to -1 to use all CPUs</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Return model prediction for the array x_test</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>x_test</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
-<dd>The input samples. Internally, its dtype
-will be converted to dtype=np.float32. If a
-sparse matrix is provided, it will be converted
-to a sparse csr_matrix.</dd>
+<dt><strong><code>x_test</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>tree_handler</code>, <code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
+<dd>The input sample.</dd>
 <dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Whether to output the raw untransformed margin value.</dd>
 </dl>
-<h2 id="output">Output</h2>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>pred</code></strong> :&ensp;<code>numpy_array</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>numpy</code> <code>array</code></dt>
 <dd>Model predictions</dd>
 </dl></section>
 <details class="source">
@@ -1338,22 +1396,21 @@ to a sparse csr_matrix.</dd>
     &#34;&#34;&#34;
     Return model prediction for the array x_test
 
-    Input
+    Parameters
     --------------------------------------
-    x_test: array-like, sparse matrix
-        The input samples. Internally, its dtype
-        will be converted to dtype=np.float32. If a
-        sparse matrix is provided, it will be converted
-        to a sparse csr_matrix.
+    x_test: hipe4ml tree_handler, array-like, sparse matrix
+        The input sample.
 
     output_margin: bool
         Whether to output the raw untransformed margin value.
 
-    Output
+    Returns
     ---------------------------------------
-    pred: numpy_array
+    out: numpy array
         Model predictions
     &#34;&#34;&#34;
+    if isinstance(x_test, hipe4ml.tree_handler.TreeHandler):
+        x_test = x_test.get_data_frame()
     if self.training_columns is not None:
         x_test = x_test[self.training_columns]
 
@@ -1377,7 +1434,7 @@ to a sparse csr_matrix.</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Set the model (hyper-)parameters</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>model_params</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Model hyper-parameter values. For
@@ -1392,7 +1449,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
     &#34;&#34;&#34;
     Set the model (hyper-)parameters
 
-    Input
+    Parameters
     ------------------------------------
     model_params: dict
         Model hyper-parameter values. For
@@ -1408,7 +1465,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Set the features used for the training process</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>training_columns</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the name of the features used for the training.
@@ -1422,7 +1479,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
     &#34;&#34;&#34;
     Set the features used for the training process
 
-    Input
+    Parameters
     ------------------------------------
     training_columns: list
         Contains the name of the features used for the training.
@@ -1437,7 +1494,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 <dd>
 <section class="desc"><p>Perform the training and the testing of the model. The model performance is estimated
 using the ROC AUC metric</p>
-<h2 id="input">Input</h2>
+<h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains respectively: training
@@ -1460,7 +1517,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
     Perform the training and the testing of the model. The model performance is estimated
     using the ROC AUC metric
 
-    Input
+    Parameters
     ----------------------------------------------
     data: list
         Contains respectively: training
@@ -1479,6 +1536,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 
     # get number of classes
     n_classes = len(np.unique(data[1]))
+    self._n_classes = n_classes
     print(&#39;Number of detected classes:&#39;, n_classes)
 
     # final training with the optimized hyperparams
@@ -1522,6 +1580,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.fit" href="#hipe4ml.model_handler.ModelHandler.fit">fit</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_model_module" href="#hipe4ml.model_handler.ModelHandler.get_model_module">get_model_module</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_model_params" href="#hipe4ml.model_handler.ModelHandler.get_model_params">get_model_params</a></code></li>
+<li><code><a title="hipe4ml.model_handler.ModelHandler.get_n_classes" href="#hipe4ml.model_handler.ModelHandler.get_n_classes">get_n_classes</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_original_model" href="#hipe4ml.model_handler.ModelHandler.get_original_model">get_original_model</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_training_columns" href="#hipe4ml.model_handler.ModelHandler.get_training_columns">get_training_columns</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.load_model_handler" href="#hipe4ml.model_handler.ModelHandler.load_model_handler">load_model_handler</a></code></li>
