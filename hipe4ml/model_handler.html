@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.5" />
+<meta name="generator" content="pdoc 0.8.1" />
 <title>hipe4ml.model_handler API documentation</title>
 <meta name="description" content="Module containing the class used for wrapping the models from different
 ML libraries to build a new model with common methods" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
-<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 </head>
 <body>
@@ -73,6 +73,8 @@ class ModelHandler:
 
             if self.model_params is None:
                 self.model_params = self.model.get_params()
+            else:
+                self.model.set_params(**self.model_params)
 
     def set_model_params(self, model_params):
         &#34;&#34;&#34;
@@ -86,7 +88,7 @@ class ModelHandler:
             n_estimators, gamma, min_child_weight, ...
         &#34;&#34;&#34;
         self.model_params = model_params
-        self.model.set_params(**model_params)
+        self.model.set_params(**self.model_params)
 
     def get_model_params(self):
         &#34;&#34;&#34;
@@ -173,10 +175,10 @@ class ModelHandler:
         &#34;&#34;&#34;
         n_classes = len(np.unique(y_train))
         self._n_classes = n_classes
-        if self.training_columns is not None:
-            self.model.fit(x_train[self.training_columns], y_train)
-        else:
-            self.model.fit(x_train, y_train)
+        if self.training_columns is None:
+            self.training_columns = list(x_train.columns)
+
+        self.model.fit(x_train[self.training_columns], y_train)
 
     def predict(self, x_test, output_margin=True):
         &#34;&#34;&#34;
@@ -188,7 +190,8 @@ class ModelHandler:
             The input sample.
 
         output_margin: bool
-            Whether to output the raw untransformed margin value.
+            Whether to output the raw untransformed margin value. If False model
+            probabilities are returned
 
         Returns
         ---------------------------------------
@@ -197,8 +200,8 @@ class ModelHandler:
         &#34;&#34;&#34;
         if isinstance(x_test, hipe4ml.tree_handler.TreeHandler):
             x_test = x_test.get_data_frame()
-        if self.training_columns is not None:
-            x_test = x_test[self.training_columns]
+
+        x_test = x_test[self.training_columns]
 
         if output_margin:
             if self.model_string == &#39;xgboost&#39;:
@@ -214,7 +217,8 @@ class ModelHandler:
 
         return pred
 
-    def train_test_model(self, data, average=&#39;macro&#39;, multi_class_opt=&#39;raise&#39;):
+    def train_test_model(self, data, return_prediction=False, output_margin=False, average=&#39;macro&#39;,
+                         multi_class_opt=&#39;raise&#39;):
         &#34;&#34;&#34;
         Perform the training and the testing of the model. The model performance is estimated
         using the ROC AUC metric
@@ -226,6 +230,14 @@ class ModelHandler:
             set dataframe, training label array,
             test set dataframe, test label array
 
+        return_prediction: bool
+            If True Model predictions on the test set are
+            returned
+
+        output_margin: bool
+            Whether to output the raw untransformed margin value. If False model
+            probabilities are returned
+
         average: string
             Option for the average of ROC AUC scores used only in case of multi-classification.
             You can choose between &#39;macro&#39; and &#39;weighted&#39;. For more information see
@@ -234,6 +246,13 @@ class ModelHandler:
         multi_class_opt: string
             Option to compute ROC AUC scores used only in case of multi-classification.
             The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
+
+        Returns
+        ---------------------------------------
+        out: numpy array or None
+            If return_prediction==True, Model predictions on the test set are
+            returned
+
         &#34;&#34;&#34;
 
         # get number of classes
@@ -246,12 +265,16 @@ class ModelHandler:
         self.fit(data[0], data[1])
         print(&#39;Training the final model: Done!&#39;)
         print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
-        y_pred = self.predict(data[2], output_margin=False)
-        roc_score = roc_auc_score(data[3], y_pred, average=average, multi_class=multi_class_opt)
+        y_pred = self.predict(data[2], output_margin=output_margin)
+        roc_score = roc_auc_score(
+            data[3], y_pred, average=average, multi_class=multi_class_opt)
         print(&#39;Testing the model: Done!&#39;)
 
         print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
         print(&#39;==============================&#39;)
+        if return_prediction:
+            return y_pred
+        return None
 
     def evaluate_hyperparams(self, data, opt_params, scoring, nfold=5, njobs=None):
         &#34;&#34;&#34;
@@ -289,7 +312,7 @@ class ModelHandler:
             Cross validation score evaluated using
             the ROC AUC metrics
         &#34;&#34;&#34;
-        opt_params = self.cast_model_params(opt_params)
+        opt_params = self.__cast_model_params(opt_params)
         params = {**self.model_params, **opt_params}
         self.model.set_params(**params)
         if self.training_columns is not None:
@@ -311,7 +334,9 @@ class ModelHandler:
             test set dataframe, test label array
 
         hyperparams_ranges: dict
-            Xgboost hyperparameter ranges(in tuples).
+            Hyperparameter ranges(in tuples).
+            Important: the type of the params must be preserved
+            when passing the ranges.
             For example:
             dict={
                 &#39;max_depth&#39;:(10,100)
@@ -344,6 +369,11 @@ class ModelHandler:
             Number of CPUs to perform computation used in the score evaluation
             with cross-validation. Set to -1 to use all CPUs
         &#34;&#34;&#34;
+        start_params = {}
+        for key in hyperparams_ranges:
+            start_params[key] = hyperparams_ranges[key][0]
+        self.set_model_params({**self.model_params, **start_params})
+
         # just an helper function
         def hyperparams_crossvalidation(**kwargs):
             return self.evaluate_hyperparams(data, kwargs, scoring, nfold, njobs)
@@ -360,12 +390,17 @@ class ModelHandler:
             max_params[key] = optimizer.max[&#39;params&#39;][key]
         print(f&#34;Best target: {optimizer.max[&#39;target&#39;]:.6f}&#34;)
         print(f&#39;Best parameters: {max_params}&#39;)
-        self.set_model_params({**self.model_params, **self.cast_model_params(max_params)})
+        self.set_model_params({**self.model_params, **self.__cast_model_params(max_params)})
 
-    def cast_model_params(self, params):
+    def __cast_model_params(self, params):
         &#34;&#34;&#34;
         Check if each model parameter is defined as integer
         and change the parameter dictionary consequently
+        Be careful: some libraries like XGBoost do not have
+        default parameters with the correct type, it is up to
+        the user of this function to make sure that the types
+        are correctly initiated in the model before casting
+        the params dictionary.
 
         Parameters
         -----------------------------------------------------
@@ -381,8 +416,9 @@ class ModelHandler:
             Hyperparameter values updated
         &#34;&#34;&#34;
         for key in params.keys():
-            if isinstance(self.model.get_params()[key], int):
-                params[key] = int(round(params[key]))
+            if key in self.model.get_params():
+                def_val = self.model.get_params()[key]
+                params[key] = type(def_val)(round(params[key]) if isinstance(def_val, int) else params[key])
         return params
 
     def dump_original_model(self, filename, xgb_format=False):
@@ -431,7 +467,9 @@ class ModelHandler:
         self.model = loaded_model.get_original_model()
         self.training_columns = loaded_model.get_training_columns()
         self.model_params = loaded_model.get_model_params()
-        self.model_string = loaded_model.get_model_module()</code></pre>
+        self.model.set_params(**self.model_params)
+        self.model_string = loaded_model.get_model_module()
+        self._n_classes = loaded_model.get_n_classes()</code></pre>
 </details>
 </section>
 <section>
@@ -448,12 +486,12 @@ class ModelHandler:
 <span>(</span><span>input_model=None, training_columns=None, model_params=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Class used for wrapping the models from different ML libraries to
+<div class="desc"><p>Class used for wrapping the models from different ML libraries to
 build a new model with common methods. Currently only XGBoost
 (through it's sklearn interface) and sklearn models are supported.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>input_model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn</code> <code>model</code></dt>
+<dt><strong><code>input_model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn model</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>training_columns</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the name of the features used for the training.
@@ -462,7 +500,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 <dd>Model hyper-parameter values. For
 example (XGBoost): max_depth, learning_rate,
 n_estimators, gamma, min_child_weight, &hellip;</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -498,6 +536,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
             if self.model_params is None:
                 self.model_params = self.model.get_params()
+            else:
+                self.model.set_params(**self.model_params)
 
     def set_model_params(self, model_params):
         &#34;&#34;&#34;
@@ -511,7 +551,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             n_estimators, gamma, min_child_weight, ...
         &#34;&#34;&#34;
         self.model_params = model_params
-        self.model.set_params(**model_params)
+        self.model.set_params(**self.model_params)
 
     def get_model_params(self):
         &#34;&#34;&#34;
@@ -598,10 +638,10 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         n_classes = len(np.unique(y_train))
         self._n_classes = n_classes
-        if self.training_columns is not None:
-            self.model.fit(x_train[self.training_columns], y_train)
-        else:
-            self.model.fit(x_train, y_train)
+        if self.training_columns is None:
+            self.training_columns = list(x_train.columns)
+
+        self.model.fit(x_train[self.training_columns], y_train)
 
     def predict(self, x_test, output_margin=True):
         &#34;&#34;&#34;
@@ -613,7 +653,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             The input sample.
 
         output_margin: bool
-            Whether to output the raw untransformed margin value.
+            Whether to output the raw untransformed margin value. If False model
+            probabilities are returned
 
         Returns
         ---------------------------------------
@@ -622,8 +663,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         if isinstance(x_test, hipe4ml.tree_handler.TreeHandler):
             x_test = x_test.get_data_frame()
-        if self.training_columns is not None:
-            x_test = x_test[self.training_columns]
+
+        x_test = x_test[self.training_columns]
 
         if output_margin:
             if self.model_string == &#39;xgboost&#39;:
@@ -639,7 +680,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
         return pred
 
-    def train_test_model(self, data, average=&#39;macro&#39;, multi_class_opt=&#39;raise&#39;):
+    def train_test_model(self, data, return_prediction=False, output_margin=False, average=&#39;macro&#39;,
+                         multi_class_opt=&#39;raise&#39;):
         &#34;&#34;&#34;
         Perform the training and the testing of the model. The model performance is estimated
         using the ROC AUC metric
@@ -651,6 +693,14 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             set dataframe, training label array,
             test set dataframe, test label array
 
+        return_prediction: bool
+            If True Model predictions on the test set are
+            returned
+
+        output_margin: bool
+            Whether to output the raw untransformed margin value. If False model
+            probabilities are returned
+
         average: string
             Option for the average of ROC AUC scores used only in case of multi-classification.
             You can choose between &#39;macro&#39; and &#39;weighted&#39;. For more information see
@@ -659,6 +709,13 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         multi_class_opt: string
             Option to compute ROC AUC scores used only in case of multi-classification.
             The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
+
+        Returns
+        ---------------------------------------
+        out: numpy array or None
+            If return_prediction==True, Model predictions on the test set are
+            returned
+
         &#34;&#34;&#34;
 
         # get number of classes
@@ -671,12 +728,16 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         self.fit(data[0], data[1])
         print(&#39;Training the final model: Done!&#39;)
         print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
-        y_pred = self.predict(data[2], output_margin=False)
-        roc_score = roc_auc_score(data[3], y_pred, average=average, multi_class=multi_class_opt)
+        y_pred = self.predict(data[2], output_margin=output_margin)
+        roc_score = roc_auc_score(
+            data[3], y_pred, average=average, multi_class=multi_class_opt)
         print(&#39;Testing the model: Done!&#39;)
 
         print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
         print(&#39;==============================&#39;)
+        if return_prediction:
+            return y_pred
+        return None
 
     def evaluate_hyperparams(self, data, opt_params, scoring, nfold=5, njobs=None):
         &#34;&#34;&#34;
@@ -714,7 +775,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             Cross validation score evaluated using
             the ROC AUC metrics
         &#34;&#34;&#34;
-        opt_params = self.cast_model_params(opt_params)
+        opt_params = self.__cast_model_params(opt_params)
         params = {**self.model_params, **opt_params}
         self.model.set_params(**params)
         if self.training_columns is not None:
@@ -736,7 +797,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             test set dataframe, test label array
 
         hyperparams_ranges: dict
-            Xgboost hyperparameter ranges(in tuples).
+            Hyperparameter ranges(in tuples).
+            Important: the type of the params must be preserved
+            when passing the ranges.
             For example:
             dict={
                 &#39;max_depth&#39;:(10,100)
@@ -769,6 +832,11 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             Number of CPUs to perform computation used in the score evaluation
             with cross-validation. Set to -1 to use all CPUs
         &#34;&#34;&#34;
+        start_params = {}
+        for key in hyperparams_ranges:
+            start_params[key] = hyperparams_ranges[key][0]
+        self.set_model_params({**self.model_params, **start_params})
+
         # just an helper function
         def hyperparams_crossvalidation(**kwargs):
             return self.evaluate_hyperparams(data, kwargs, scoring, nfold, njobs)
@@ -785,12 +853,17 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             max_params[key] = optimizer.max[&#39;params&#39;][key]
         print(f&#34;Best target: {optimizer.max[&#39;target&#39;]:.6f}&#34;)
         print(f&#39;Best parameters: {max_params}&#39;)
-        self.set_model_params({**self.model_params, **self.cast_model_params(max_params)})
+        self.set_model_params({**self.model_params, **self.__cast_model_params(max_params)})
 
-    def cast_model_params(self, params):
+    def __cast_model_params(self, params):
         &#34;&#34;&#34;
         Check if each model parameter is defined as integer
         and change the parameter dictionary consequently
+        Be careful: some libraries like XGBoost do not have
+        default parameters with the correct type, it is up to
+        the user of this function to make sure that the types
+        are correctly initiated in the model before casting
+        the params dictionary.
 
         Parameters
         -----------------------------------------------------
@@ -806,8 +879,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             Hyperparameter values updated
         &#34;&#34;&#34;
         for key in params.keys():
-            if isinstance(self.model.get_params()[key], int):
-                params[key] = int(round(params[key]))
+            if key in self.model.get_params():
+                def_val = self.model.get_params()[key]
+                params[key] = type(def_val)(round(params[key]) if isinstance(def_val, int) else params[key])
         return params
 
     def dump_original_model(self, filename, xgb_format=False):
@@ -856,67 +930,22 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         self.model = loaded_model.get_original_model()
         self.training_columns = loaded_model.get_training_columns()
         self.model_params = loaded_model.get_model_params()
-        self.model_string = loaded_model.get_model_module()</code></pre>
+        self.model.set_params(**self.model_params)
+        self.model_string = loaded_model.get_model_module()
+        self._n_classes = loaded_model.get_n_classes()</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="hipe4ml.model_handler.ModelHandler.cast_model_params"><code class="name flex">
-<span>def <span class="ident">cast_model_params</span></span>(<span>self, params)</span>
-</code></dt>
-<dd>
-<section class="desc"><p>Check if each model parameter is defined as integer
-and change the parameter dictionary consequently</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>params</code></strong> :&ensp;<code>dict</code></dt>
-<dd>Hyperparameter values. For
-example: max_depth, learning_rate,
-n_estimators, gamma, min_child_weight,
-subsample, colsample_bytree</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>dict</code></dt>
-<dd>Hyperparameter values updated</dd>
-</dl></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def cast_model_params(self, params):
-    &#34;&#34;&#34;
-    Check if each model parameter is defined as integer
-    and change the parameter dictionary consequently
-
-    Parameters
-    -----------------------------------------------------
-    params: dict
-        Hyperparameter values. For
-        example: max_depth, learning_rate,
-        n_estimators, gamma, min_child_weight,
-        subsample, colsample_bytree
-
-    Returns
-    -----------------------------------------------------
-    out: dict
-        Hyperparameter values updated
-    &#34;&#34;&#34;
-    for key in params.keys():
-        if isinstance(self.model.get_params()[key], int):
-            params[key] = int(round(params[key]))
-    return params</code></pre>
-</details>
-</dd>
 <dt id="hipe4ml.model_handler.ModelHandler.dump_model_handler"><code class="name flex">
 <span>def <span class="ident">dump_model_handler</span></span>(<span>self, filename)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Save the model handler into a pickle file</p>
+<div class="desc"><p>Save the model handler into a pickle file</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the file in which the model is saved</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -937,7 +966,7 @@ subsample, colsample_bytree</dd>
 <span>def <span class="ident">dump_original_model</span></span>(<span>self, filename, xgb_format=False)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Save the trained model into a pickle
+<div class="desc"><p>Save the trained model into a pickle
 file. Only for xgboost models it is also given
 the possibility to save them into a .model file</p>
 <h2 id="parameters">Parameters</h2>
@@ -946,7 +975,7 @@ the possibility to save them into a .model file</p>
 <dd>Name of the file in which the model is saved</dd>
 <dt><strong><code>xgb_format</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True saves the xgboost model into a .model file</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -978,7 +1007,7 @@ the possibility to save them into a .model file</p>
 <span>def <span class="ident">evaluate_hyperparams</span></span>(<span>self, data, opt_params, scoring, nfold=5, njobs=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate the cross-validation score for a set of hyper-parameters</p>
+<div class="desc"><p>Calculate the cross-validation score for a set of hyper-parameters</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
@@ -990,7 +1019,7 @@ test set dataframe, test label array</dd>
 example: max_depth, learning_rate,
 n_estimators, gamma, min_child_weight,
 subsample, colsample_bytree</dd>
-<dt><strong><code>scoring</code></strong> :&ensp;<code>string</code>, <code>callable</code> or <code>None</code></dt>
+<dt><strong><code>scoring</code></strong> :&ensp;<code>string, callable</code> or <code>None</code></dt>
 <dd>A string (see sklearn model evaluation documentation:
 <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">https://scikit-learn.org/stable/modules/model_evaluation.html</a>)
 or a scorer callable object / function with signature scorer(estimator, X, y)
@@ -1006,7 +1035,7 @@ Set to -1 to use all CPUs</dd>
 <dt><strong><code>out</code></strong> :&ensp;<code>float</code></dt>
 <dd>Cross validation score evaluated using
 the ROC AUC metrics</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1047,7 +1076,7 @@ the ROC AUC metrics</dd>
         Cross validation score evaluated using
         the ROC AUC metrics
     &#34;&#34;&#34;
-    opt_params = self.cast_model_params(opt_params)
+    opt_params = self.__cast_model_params(opt_params)
     params = {**self.model_params, **opt_params}
     self.model.set_params(**params)
     if self.training_columns is not None:
@@ -1060,14 +1089,14 @@ the ROC AUC metrics</dd>
 <span>def <span class="ident">fit</span></span>(<span>self, x_train, y_train)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Fit Model</p>
+<div class="desc"><p>Fit Model</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>x_train</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
+<dt><strong><code>x_train</code></strong> :&ensp;<code>array-like, sparse matrix</code></dt>
 <dd>Training data</dd>
-<dt><strong><code>y_train</code></strong> :&ensp;<code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
+<dt><strong><code>y_train</code></strong> :&ensp;<code>array-like, sparse matrix</code></dt>
 <dd>Target data</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1086,23 +1115,23 @@ the ROC AUC metrics</dd>
     &#34;&#34;&#34;
     n_classes = len(np.unique(y_train))
     self._n_classes = n_classes
-    if self.training_columns is not None:
-        self.model.fit(x_train[self.training_columns], y_train)
-    else:
-        self.model.fit(x_train, y_train)</code></pre>
+    if self.training_columns is None:
+        self.training_columns = list(x_train.columns)
+
+    self.model.fit(x_train[self.training_columns], y_train)</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.get_model_module"><code class="name flex">
 <span>def <span class="ident">get_model_module</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Get the string containing the name
+<div class="desc"><p>Get the string containing the name
 of the model module</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the model module</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1124,14 +1153,14 @@ of the model module</p>
 <span>def <span class="ident">get_model_params</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Get the model (hyper-)parameters</p>
+<div class="desc"><p>Get the model (hyper-)parameters</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Model hyper-parameter values. For
 example (XGBoost): max_depth, learning_rate,
 n_estimators, gamma, min_child_weight, &hellip;</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1154,12 +1183,12 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 <span>def <span class="ident">get_n_classes</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Get the number of classes</p>
+<div class="desc"><p>Get the number of classes</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of classes</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1180,12 +1209,12 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 <span>def <span class="ident">get_original_model</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Get the original unwrapped model</p>
+<div class="desc"><p>Get the original unwrapped model</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>sklearn</code> or <code>XGBoost</code> <code>model</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>sklearn</code> or <code>XGBoost model</code></dt>
 <dd>&nbsp;</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1205,13 +1234,13 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 <span>def <span class="ident">get_training_columns</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Get the features used for the training process</p>
+<div class="desc"><p>Get the features used for the training process</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
 <dd>Names of the features used for the training.
 Example: ['dEdx', 'pT', 'ct']</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1234,12 +1263,12 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 <span>def <span class="ident">load_model_handler</span></span>(<span>self, filename)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Load a model handler saved into a pickle file</p>
+<div class="desc"><p>Load a model handler saved into a pickle file</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the file in which the model is saved</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1257,14 +1286,16 @@ Example: ['dEdx', 'pT', 'ct']</dd>
     self.model = loaded_model.get_original_model()
     self.training_columns = loaded_model.get_training_columns()
     self.model_params = loaded_model.get_model_params()
-    self.model_string = loaded_model.get_model_module()</code></pre>
+    self.model.set_params(**self.model_params)
+    self.model_string = loaded_model.get_model_module()
+    self._n_classes = loaded_model.get_n_classes()</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.optimize_params_bayes"><code class="name flex">
 <span>def <span class="ident">optimize_params_bayes</span></span>(<span>self, data, hyperparams_ranges, scoring, nfold=5, init_points=5, n_iter=5, njobs=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Perform Bayesian optimization and update the model hyper-parameters
+<div class="desc"><p>Perform Bayesian optimization and update the model hyper-parameters
 with the best ones</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1273,13 +1304,15 @@ with the best ones</p>
 set dataframe, training label array,
 test set dataframe, test label array</dd>
 <dt><strong><code>hyperparams_ranges</code></strong> :&ensp;<code>dict</code></dt>
-<dd>Xgboost hyperparameter ranges(in tuples).
+<dd>Hyperparameter ranges(in tuples).
+Important: the type of the params must be preserved
+when passing the ranges.
 For example:
 dict={
 'max_depth':(10,100)
 'learning_rate': (0.01,0.03)
 }</dd>
-<dt><strong><code>scoring</code></strong> :&ensp;<code>string</code>, <code>callable</code> or <code>None</code></dt>
+<dt><strong><code>scoring</code></strong> :&ensp;<code>string, callable</code> or <code>None</code></dt>
 <dd>A string (see sklearn model evaluation documentation:
 <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">https://scikit-learn.org/stable/modules/model_evaluation.html</a>)
 or a scorer callable object / function with signature scorer(estimator, X, y)
@@ -1300,7 +1333,7 @@ Bigger n_iter results in better description of thetarget function</dd>
 <dt><strong><code>njobs</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
 <dd>Number of CPUs to perform computation used in the score evaluation
 with cross-validation. Set to -1 to use all CPUs</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1319,7 +1352,9 @@ with cross-validation. Set to -1 to use all CPUs</dd>
         test set dataframe, test label array
 
     hyperparams_ranges: dict
-        Xgboost hyperparameter ranges(in tuples).
+        Hyperparameter ranges(in tuples).
+        Important: the type of the params must be preserved
+        when passing the ranges.
         For example:
         dict={
             &#39;max_depth&#39;:(10,100)
@@ -1352,6 +1387,11 @@ with cross-validation. Set to -1 to use all CPUs</dd>
         Number of CPUs to perform computation used in the score evaluation
         with cross-validation. Set to -1 to use all CPUs
     &#34;&#34;&#34;
+    start_params = {}
+    for key in hyperparams_ranges:
+        start_params[key] = hyperparams_ranges[key][0]
+    self.set_model_params({**self.model_params, **start_params})
+
     # just an helper function
     def hyperparams_crossvalidation(**kwargs):
         return self.evaluate_hyperparams(data, kwargs, scoring, nfold, njobs)
@@ -1368,26 +1408,27 @@ with cross-validation. Set to -1 to use all CPUs</dd>
         max_params[key] = optimizer.max[&#39;params&#39;][key]
     print(f&#34;Best target: {optimizer.max[&#39;target&#39;]:.6f}&#34;)
     print(f&#39;Best parameters: {max_params}&#39;)
-    self.set_model_params({**self.model_params, **self.cast_model_params(max_params)})</code></pre>
+    self.set_model_params({**self.model_params, **self.__cast_model_params(max_params)})</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, x_test, output_margin=True)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Return model prediction for the array x_test</p>
+<div class="desc"><p>Return model prediction for the array x_test</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>x_test</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>tree_handler</code>, <code>array</code>-<code>like</code>, <code>sparse</code> <code>matrix</code></dt>
+<dt><strong><code>x_test</code></strong> :&ensp;<code>hipe4ml tree_handler, array-like, sparse matrix</code></dt>
 <dd>The input sample.</dd>
 <dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Whether to output the raw untransformed margin value.</dd>
+<dd>Whether to output the raw untransformed margin value. If False model
+probabilities are returned</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>numpy</code> <code>array</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>numpy array</code></dt>
 <dd>Model predictions</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1402,7 +1443,8 @@ with cross-validation. Set to -1 to use all CPUs</dd>
         The input sample.
 
     output_margin: bool
-        Whether to output the raw untransformed margin value.
+        Whether to output the raw untransformed margin value. If False model
+        probabilities are returned
 
     Returns
     ---------------------------------------
@@ -1411,8 +1453,8 @@ with cross-validation. Set to -1 to use all CPUs</dd>
     &#34;&#34;&#34;
     if isinstance(x_test, hipe4ml.tree_handler.TreeHandler):
         x_test = x_test.get_data_frame()
-    if self.training_columns is not None:
-        x_test = x_test[self.training_columns]
+
+    x_test = x_test[self.training_columns]
 
     if output_margin:
         if self.model_string == &#39;xgboost&#39;:
@@ -1433,14 +1475,14 @@ with cross-validation. Set to -1 to use all CPUs</dd>
 <span>def <span class="ident">set_model_params</span></span>(<span>self, model_params)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Set the model (hyper-)parameters</p>
+<div class="desc"><p>Set the model (hyper-)parameters</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>model_params</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Model hyper-parameter values. For
 example (XGBoost): max_depth, learning_rate,
 n_estimators, gamma, min_child_weight, &hellip;</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1457,20 +1499,20 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         n_estimators, gamma, min_child_weight, ...
     &#34;&#34;&#34;
     self.model_params = model_params
-    self.model.set_params(**model_params)</code></pre>
+    self.model.set_params(**self.model_params)</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.set_training_columns"><code class="name flex">
 <span>def <span class="ident">set_training_columns</span></span>(<span>self, training_columns)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Set the features used for the training process</p>
+<div class="desc"><p>Set the features used for the training process</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>training_columns</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the name of the features used for the training.
 Example: ['dEdx', 'pT', 'ct']</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1489,10 +1531,10 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.train_test_model"><code class="name flex">
-<span>def <span class="ident">train_test_model</span></span>(<span>self, data, average='macro', multi_class_opt='raise')</span>
+<span>def <span class="ident">train_test_model</span></span>(<span>self, data, return_prediction=False, output_margin=False, average='macro', multi_class_opt='raise')</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Perform the training and the testing of the model. The model performance is estimated
+<div class="desc"><p>Perform the training and the testing of the model. The model performance is estimated
 using the ROC AUC metric</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1500,6 +1542,12 @@ using the ROC AUC metric</p>
 <dd>Contains respectively: training
 set dataframe, training label array,
 test set dataframe, test label array</dd>
+<dt><strong><code>return_prediction</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True Model predictions on the test set are
+returned</dd>
+<dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to output the raw untransformed margin value. If False model
+probabilities are returned</dd>
 <dt><strong><code>average</code></strong> :&ensp;<code>string</code></dt>
 <dd>Option for the average of ROC AUC scores used only in case of multi-classification.
 You can choose between 'macro' and 'weighted'. For more information see
@@ -1507,12 +1555,19 @@ You can choose between 'macro' and 'weighted'. For more information see
 <dt><strong><code>multi_class_opt</code></strong> :&ensp;<code>string</code></dt>
 <dd>Option to compute ROC AUC scores used only in case of multi-classification.
 The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
-</dl></section>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>numpy array</code> or <code>None</code></dt>
+<dd>If return_prediction==True, Model predictions on the test set are
+returned</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def train_test_model(self, data, average=&#39;macro&#39;, multi_class_opt=&#39;raise&#39;):
+<pre><code class="python">def train_test_model(self, data, return_prediction=False, output_margin=False, average=&#39;macro&#39;,
+                     multi_class_opt=&#39;raise&#39;):
     &#34;&#34;&#34;
     Perform the training and the testing of the model. The model performance is estimated
     using the ROC AUC metric
@@ -1524,6 +1579,14 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
         set dataframe, training label array,
         test set dataframe, test label array
 
+    return_prediction: bool
+        If True Model predictions on the test set are
+        returned
+
+    output_margin: bool
+        Whether to output the raw untransformed margin value. If False model
+        probabilities are returned
+
     average: string
         Option for the average of ROC AUC scores used only in case of multi-classification.
         You can choose between &#39;macro&#39; and &#39;weighted&#39;. For more information see
@@ -1532,6 +1595,13 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
     multi_class_opt: string
         Option to compute ROC AUC scores used only in case of multi-classification.
         The one-vs-one &#39;ovo&#39; and one-vs-rest &#39;ovr&#39; approaches are available
+
+    Returns
+    ---------------------------------------
+    out: numpy array or None
+        If return_prediction==True, Model predictions on the test set are
+        returned
+
     &#34;&#34;&#34;
 
     # get number of classes
@@ -1544,12 +1614,16 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
     self.fit(data[0], data[1])
     print(&#39;Training the final model: Done!&#39;)
     print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
-    y_pred = self.predict(data[2], output_margin=False)
-    roc_score = roc_auc_score(data[3], y_pred, average=average, multi_class=multi_class_opt)
+    y_pred = self.predict(data[2], output_margin=output_margin)
+    roc_score = roc_auc_score(
+        data[3], y_pred, average=average, multi_class=multi_class_opt)
     print(&#39;Testing the model: Done!&#39;)
 
     print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
-    print(&#39;==============================&#39;)</code></pre>
+    print(&#39;==============================&#39;)
+    if return_prediction:
+        return y_pred
+    return None</code></pre>
 </details>
 </dd>
 </dl>
@@ -1573,7 +1647,6 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 <li>
 <h4><code><a title="hipe4ml.model_handler.ModelHandler" href="#hipe4ml.model_handler.ModelHandler">ModelHandler</a></code></h4>
 <ul class="">
-<li><code><a title="hipe4ml.model_handler.ModelHandler.cast_model_params" href="#hipe4ml.model_handler.ModelHandler.cast_model_params">cast_model_params</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.dump_model_handler" href="#hipe4ml.model_handler.ModelHandler.dump_model_handler">dump_model_handler</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.dump_original_model" href="#hipe4ml.model_handler.ModelHandler.dump_original_model">dump_original_model</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.evaluate_hyperparams" href="#hipe4ml.model_handler.ModelHandler.evaluate_hyperparams">evaluate_hyperparams</a></code></li>
@@ -1597,7 +1670,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>

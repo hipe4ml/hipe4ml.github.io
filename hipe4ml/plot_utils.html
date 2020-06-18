@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.5" />
+<meta name="generator" content="pdoc 0.8.1" />
 <title>hipe4ml.plot_utils API documentation</title>
 <meta name="description" content="Module containing the plot utils. Each function returns a matplotlib object" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
-<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 </head>
 <body>
@@ -172,7 +172,8 @@ def plot_distr(data_list, column=None, bins=50, labels=None, colors=None, **kwds
 
     column: str or list of them
         Contains the name of the features you want to plot
-        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
+        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]. If None all the features
+        are selected
 
     bins: int or sequence of scalars or str
         If bins is an int, it defines the number of equal-width
@@ -211,8 +212,9 @@ def plot_distr(data_list, column=None, bins=50, labels=None, colors=None, **kwds
     if column is not None:
         if not isinstance(column, (list, np.ndarray, pd.Index)):
             column = [column]
-        for dfm in list_of_df:
-            dfm = dfm[column]
+
+    else:
+        column = list(list_of_df[0].columns)
 
     if labels is None:
         labels = [f&#39;class{i_class}&#39; for i_class, _ in enumerate(list_of_df)]
@@ -314,7 +316,7 @@ def plot_corr(data_list, columns, labels=None, **kwds):
             tick.tick2line.set_markersize(0)
             tick.label1.set_horizontalalignment(&#39;center&#39;)
 
-        axs.cax.colorbar(heatmap)
+        plt.colorbar(heatmap, axs.cax)
 
     return res
 
@@ -571,7 +573,7 @@ def plot_roc_train_test(y_truth_test, y_score_test, y_truth_train, y_score_train
 
 def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approximate=True):
     &#34;&#34;&#34;
-    Calculate the feature importance using the shap violin plot for
+    Calculate the feature importance using the shap algorithm for
     each feature. The calculation is performed on a subsample of the
     input training/test set
 
@@ -592,9 +594,8 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
 
     n_sample: int
         Number of candidates employed to fill
-        the shap violin plots.
-        If larger than the number of candidates
-        in each class, minimum number of candidates
+        the shap plots. If larger than the number of
+        candidates in each class, minimum number of candidates
         in a given class used instead
 
     approximate: bool
@@ -603,8 +604,13 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
 
     Returns
     -------------------------------------------
-    out: matplotlib.figure.Figure or list of them
-        Plots with shap feature importance
+    out: List of matplotlib.figure.Figure
+        Plots with shap feature importance. The first ones are the shap violin plots
+        computed for each class(in case of binary classification only one plot is returned).
+        The last plot of the list is built by taking the mean absolute value of the SHAP
+        values for each feature to get a standard bar plot (stacked bars are produced for
+        multi-class outputs)
+
     &#34;&#34;&#34;
     class_labels, class_counts = np.unique(y_truth, return_counts=True)
     n_classes = len(class_labels)
@@ -617,22 +623,24 @@ def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approxi
         subs.append(df_in[y_truth == class_lab].sample(n_sample))
 
     df_subs = pd.concat(subs)
+    df_subs = df_subs[model.get_training_columns()]
     explainer = shap.TreeExplainer(model.get_original_model())
     shap_values = explainer.shap_values(df_subs, approximate=approximate)
+    res = []
 
     if n_classes &lt;= 2:
-        res = plt.figure(figsize=(18, 9))
+        res.append(plt.figure(figsize=(18, 9)))
         shap.summary_plot(shap_values, df_subs, plot_size=(
             18, 9), class_names=labels, show=False)
     else:
-        res = []
         for i_class in range(n_classes):
             res.append(plt.figure(figsize=(18, 9)))
             shap.summary_plot(shap_values[i_class], df_subs, plot_size=(
                 18, 9), class_names=labels, show=False)
-        res.append(plt.figure(figsize=(18, 9)))
-        shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;,
-                          plot_size=(18, 9), class_names=labels, show=False)
+
+    res.append(plt.figure(figsize=(18, 9)))
+    shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;, plot_size=(
+        18, 9), class_names=labels, show=False)
 
     return res
 
@@ -763,7 +771,7 @@ def plot_learning_curves(model, data, n_points=10):
 <span>def <span class="ident">plot_bdt_eff</span></span>(<span>threshold, eff_sig)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Plot the model efficiency calculated with the function
+<div class="desc"><p>Plot the model efficiency calculated with the function
 bdt_efficiency_array() in analysis_utils</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -777,7 +785,7 @@ bdt_efficiency_array() in analysis_utils</p>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing model efficiency as a
 function of the threshold score</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -815,7 +823,7 @@ function of the threshold score</dd>
 <span>def <span class="ident">plot_corr</span></span>(<span>data_list, columns, labels=None, **kwds)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate pairwise correlation between features for
+<div class="desc"><p>Calculate pairwise correlation between features for
 each class (e.g. signal and background in case of binary
 classification)</p>
 <h2 id="parameters">Parameters</h2>
@@ -828,14 +836,14 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 <dt><strong><code>labels</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the labels to be displayed in the legend
 If None the labels are class1, class2, &hellip;, classN</dd>
-<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra</code> <code>arguments</code> <code>are</code> <code>passed</code> <code>on</code> <code>to</code> <code>DataFrame.corr</code>()</dt>
+<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to DataFrame.corr()</code></dt>
 <dd>&nbsp;</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code> or <code>list</code> of <code>them</code></dt>
 <dd>Correlations between the features for each class</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -919,7 +927,7 @@ If None the labels are class1, class2, &hellip;, classN</dd>
             tick.tick2line.set_markersize(0)
             tick.label1.set_horizontalalignment(&#39;center&#39;)
 
-        axs.cax.colorbar(heatmap)
+        plt.colorbar(heatmap, axs.cax)
 
     return res</code></pre>
 </details>
@@ -928,14 +936,15 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 <span>def <span class="ident">plot_distr</span></span>(<span>data_list, column=None, bins=50, labels=None, colors=None, **kwds)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Draw histograms comparing the distributions of each class.</p>
+<div class="desc"><p>Draw histograms comparing the distributions of each class.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>data_list</code></strong> :&ensp;<code>TreeHandler</code>, <code>pandas.Dataframe</code> or <code>list</code> of <code>them</code></dt>
+<dt><strong><code>data_list</code></strong> :&ensp;<code>TreeHandler, pandas.Dataframe</code> or <code>list</code> of <code>them</code></dt>
 <dd>Contains a TreeHandler or a dataframe for each class</dd>
 <dt><strong><code>column</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>them</code></dt>
 <dd>Contains the name of the features you want to plot
-Example: ['dEdx', 'pT', 'ct']</dd>
+Example: ['dEdx', 'pT', 'ct']. If None all the features
+are selected</dd>
 <dt><strong><code>bins</code></strong> :&ensp;<code>int</code> or <code>sequence</code> of <code>scalars</code> or <code>str</code></dt>
 <dd>If bins is an int, it defines the number of equal-width
 bins in the given range (10, by default). If bins is a
@@ -953,9 +962,9 @@ extra arguments are passed on to pandas.DataFrame.hist():
 <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html</a></p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>numpy</code> <code>array</code> of <code>matplotlib.axes.AxesSubplot</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>numpy array</code> of <code>matplotlib.axes.AxesSubplot</code></dt>
 <dd>Distributions of the features for each class</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -971,7 +980,8 @@ extra arguments are passed on to pandas.DataFrame.hist():
 
     column: str or list of them
         Contains the name of the features you want to plot
-        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]
+        Example: [&#39;dEdx&#39;, &#39;pT&#39;, &#39;ct&#39;]. If None all the features
+        are selected
 
     bins: int or sequence of scalars or str
         If bins is an int, it defines the number of equal-width
@@ -1010,8 +1020,9 @@ extra arguments are passed on to pandas.DataFrame.hist():
     if column is not None:
         if not isinstance(column, (list, np.ndarray, pd.Index)):
             column = [column]
-        for dfm in list_of_df:
-            dfm = dfm[column]
+
+    else:
+        column = list(list_of_df[0].columns)
 
     if labels is None:
         labels = [f&#39;class{i_class}&#39; for i_class, _ in enumerate(list_of_df)]
@@ -1038,25 +1049,24 @@ extra arguments are passed on to pandas.DataFrame.hist():
 <span>def <span class="ident">plot_feature_imp</span></span>(<span>df_in, y_truth, model, labels=None, n_sample=10000, approximate=True)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate the feature importance using the shap violin plot for
+<div class="desc"><p>Calculate the feature importance using the shap algorithm for
 each feature. The calculation is performed on a subsample of the
 input training/test set</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>df_in</code></strong> :&ensp;<code>Pandas</code> <code>dataframe</code></dt>
+<dt><strong><code>df_in</code></strong> :&ensp;<code>Pandas dataframe</code></dt>
 <dd>Training or test set dataframe</dd>
 <dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
 <dd>Training or test set label</dd>
-<dt><strong><code>model</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>model_handler</code></dt>
+<dt><strong><code>model</code></strong> :&ensp;<code><a title="hipe4ml" href="index.html">hipe4ml</a> model_handler</code></dt>
 <dd>Trained model</dd>
 <dt><strong><code>labels</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the labels to be displayed in the legend
 If None the labels are class1, class2, &hellip;, classN</dd>
 <dt><strong><code>n_sample</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of candidates employed to fill
-the shap violin plots.
-If larger than the number of candidates
-in each class, minimum number of candidates
+the shap plots. If larger than the number of
+candidates in each class, minimum number of candidates
 in a given class used instead</dd>
 <dt><strong><code>approximate</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Run fast and approximat roughly the SHAP values. For more information
@@ -1064,16 +1074,20 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code> or <code>list</code> of <code>them</code></dt>
-<dd>Plots with shap feature importance</dd>
-</dl></section>
+<dt><strong><code>out</code></strong> :&ensp;<code>List</code> of <code>matplotlib.figure.Figure</code></dt>
+<dd>Plots with shap feature importance. The first ones are the shap violin plots
+computed for each class(in case of binary classification only one plot is returned).
+The last plot of the list is built by taking the mean absolute value of the SHAP
+values for each feature to get a standard bar plot (stacked bars are produced for
+multi-class outputs)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def plot_feature_imp(df_in, y_truth, model, labels=None, n_sample=10000, approximate=True):
     &#34;&#34;&#34;
-    Calculate the feature importance using the shap violin plot for
+    Calculate the feature importance using the shap algorithm for
     each feature. The calculation is performed on a subsample of the
     input training/test set
 
@@ -1094,9 +1108,8 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
 
     n_sample: int
         Number of candidates employed to fill
-        the shap violin plots.
-        If larger than the number of candidates
-        in each class, minimum number of candidates
+        the shap plots. If larger than the number of
+        candidates in each class, minimum number of candidates
         in a given class used instead
 
     approximate: bool
@@ -1105,8 +1118,13 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
 
     Returns
     -------------------------------------------
-    out: matplotlib.figure.Figure or list of them
-        Plots with shap feature importance
+    out: List of matplotlib.figure.Figure
+        Plots with shap feature importance. The first ones are the shap violin plots
+        computed for each class(in case of binary classification only one plot is returned).
+        The last plot of the list is built by taking the mean absolute value of the SHAP
+        values for each feature to get a standard bar plot (stacked bars are produced for
+        multi-class outputs)
+
     &#34;&#34;&#34;
     class_labels, class_counts = np.unique(y_truth, return_counts=True)
     n_classes = len(class_labels)
@@ -1119,22 +1137,24 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
         subs.append(df_in[y_truth == class_lab].sample(n_sample))
 
     df_subs = pd.concat(subs)
+    df_subs = df_subs[model.get_training_columns()]
     explainer = shap.TreeExplainer(model.get_original_model())
     shap_values = explainer.shap_values(df_subs, approximate=approximate)
+    res = []
 
     if n_classes &lt;= 2:
-        res = plt.figure(figsize=(18, 9))
+        res.append(plt.figure(figsize=(18, 9)))
         shap.summary_plot(shap_values, df_subs, plot_size=(
             18, 9), class_names=labels, show=False)
     else:
-        res = []
         for i_class in range(n_classes):
             res.append(plt.figure(figsize=(18, 9)))
             shap.summary_plot(shap_values[i_class], df_subs, plot_size=(
                 18, 9), class_names=labels, show=False)
-        res.append(plt.figure(figsize=(18, 9)))
-        shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;,
-                          plot_size=(18, 9), class_names=labels, show=False)
+
+    res.append(plt.figure(figsize=(18, 9)))
+    shap.summary_plot(shap_values, df_subs, plot_type=&#39;bar&#39;, plot_size=(
+        18, 9), class_names=labels, show=False)
 
     return res</code></pre>
 </details>
@@ -1143,10 +1163,10 @@ see <a href="https://shap.readthedocs.io/en/latest/#shap.TreeExplainer.shap_valu
 <span>def <span class="ident">plot_learning_curves</span></span>(<span>model, data, n_points=10)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Plot learning curves</p>
+<div class="desc"><p>Plot learning curves</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>model</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>model_handler</code></dt>
+<dt><strong><code>model</code></strong> :&ensp;<code><a title="hipe4ml" href="index.html">hipe4ml</a> model_handler</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains respectively: training
@@ -1159,7 +1179,7 @@ test set dataframe, test label array</dd>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the learning curves</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1214,11 +1234,11 @@ test set dataframe, test label array</dd>
 <span>def <span class="ident">plot_output_train_test</span></span>(<span>model, data, bins=80, output_margin=True, labels=None, logscale=False, **kwds)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Plot the model output distributions for each class and output
+<div class="desc"><p>Plot the model output distributions for each class and output
 both for training and test set.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>model</code></strong> :&ensp;<a title="hipe4ml" href="index.html"><code>hipe4ml</code></a> <code>model</code> <code>handler</code></dt>
+<dt><strong><code>model</code></strong> :&ensp;<code><a title="hipe4ml" href="index.html">hipe4ml</a> model handler</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains respectively: training
@@ -1249,7 +1269,7 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code> or <code>list</code> of <code>them</code></dt>
 <dd>Model output distributions for each class</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1353,7 +1373,7 @@ If None the labels are class1, class2, &hellip;, classN</dd>
 <span>def <span class="ident">plot_precision_recall</span></span>(<span>y_truth, y_score, labels=None, pos_label=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Plot precision recall curve</p>
+<div class="desc"><p>Plot precision recall curve</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
@@ -1370,7 +1390,7 @@ otherwise an error will be raised.</dd>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the precision recall curves</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1448,7 +1468,7 @@ otherwise an error will be raised.</dd>
 <span>def <span class="ident">plot_roc</span></span>(<span>y_truth, y_score, pos_label=None, labels=None, average='macro', multi_class_opt='raise')</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate and plot the roc curve</p>
+<div class="desc"><p>Calculate and plot the roc curve</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>y_truth</code></strong> :&ensp;<code>array</code></dt>
@@ -1480,7 +1500,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the roc curves</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1576,7 +1596,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 <span>def <span class="ident">plot_roc_train_test</span></span>(<span>y_truth_test, y_score_test, y_truth_train, y_score_train, pos_label=None, labels=None, average='macro', multi_class_opt='raise')</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculate and plot the roc curve for test and train sets</p>
+<div class="desc"><p>Calculate and plot the roc curve for test and train sets</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>y_truth_test</code></strong> :&ensp;<code>array</code></dt>
@@ -1615,7 +1635,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
 <dd>Plot containing the roc curves</dd>
-</dl></section>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1742,7 +1762,7 @@ The one-vs-one 'ovo' and one-vs-rest 'ovr' approaches are available</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>
