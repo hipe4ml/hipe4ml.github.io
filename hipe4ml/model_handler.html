@@ -461,7 +461,7 @@ class ModelHandler:
             Name of the file in which the model is saved
         &#34;&#34;&#34;
         with open(filename, &#34;wb&#34;) as output_file:
-            pickle.dump(self.model, output_file)
+            pickle.dump(self, output_file)
 
     def load_model_handler(self, filename):
         &#34;&#34;&#34;
@@ -932,7 +932,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             Name of the file in which the model is saved
         &#34;&#34;&#34;
         with open(filename, &#34;wb&#34;) as output_file:
-            pickle.dump(self.model, output_file)
+            pickle.dump(self, output_file)
 
     def load_model_handler(self, filename):
         &#34;&#34;&#34;
@@ -978,7 +978,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         Name of the file in which the model is saved
     &#34;&#34;&#34;
     with open(filename, &#34;wb&#34;) as output_file:
-        pickle.dump(self.model, output_file)</code></pre>
+        pickle.dump(self, output_file)</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.dump_original_model"><code class="name flex">
