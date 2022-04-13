@@ -39,7 +39,7 @@ import pickle
 
 import numpy as np
 import optuna
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, mean_squared_error
 from sklearn.model_selection import cross_val_score
 
 import hipe4ml.tree_handler
@@ -48,12 +48,12 @@ import hipe4ml.tree_handler
 class ModelHandler:
     &#34;&#34;&#34;
     Class used for wrapping the models from different ML libraries to
-    build a new model with common methods. Currently only XGBoost
-    (through it&#39;s sklearn interface) and sklearn models are supported.
+    build a new model with common methods. Currently LightGBM, XGBoost
+    (through their sklearn interface) and sklearn models are supported.
 
     Parameters
     -------------------------------------------------
-    input_model: xgboost or sklearn model
+    input_model: XGBoost, LightGBM or sklearn model
 
     training_columns: list
         Contains the name of the features used for the training.
@@ -63,16 +63,28 @@ class ModelHandler:
         Model hyper-parameter values. For
         example (XGBoost): max_depth, learning_rate,
         n_estimators, gamma, min_child_weight, ...
+
+    task_type: str
+        Task type of the model: &#39;classification&#39; or &#39;regression&#39;
     &#34;&#34;&#34;
 
-    def __init__(self, input_model=None, training_columns=None, model_params=None):
+    def __init__(self, input_model=None, training_columns=None, model_params=None, task_type=&#39;classification&#39;):
         self.model = input_model
         self.training_columns = training_columns
         self.model_params = model_params
         self._n_classes = None
+        self._task_type = task_type
+        if self._task_type not in [&#39;classification&#39;, &#39;regression&#39;]:
+            raise ValueError(
+                &#34;Task type must be either &#39;classification&#39; or &#39;regression&#39;&#34;)
 
         if self.model is not None:
-            self.model_string = inspect.getmodule(self.model).__name__.partition(&#39;.&#39;)[0]
+            self.model_string = inspect.getmodule(
+                self.model).__name__.partition(&#39;.&#39;)[0]
+
+            if self.model_string not in [&#34;xgboost&#34;, &#34;lightgbm&#34;, &#34;sklearn&#34;]:
+                raise ValueError(
+                    &#34;Model must be either &#39;xgboost&#39;, &#39;lightgbm&#39; or &#39;sklearn&#39;&#34;)
 
             if self.model_params is None:
                 self.model_params = self.model.get_params()
@@ -137,7 +149,7 @@ class ModelHandler:
 
         Returns
         ---------------------------
-        out: sklearn or XGBoost model
+        out: XGBoost, LGBM or sklearn model
         &#34;&#34;&#34;
         return self.model
 
@@ -164,6 +176,17 @@ class ModelHandler:
         &#34;&#34;&#34;
         return self._n_classes
 
+    def get_task_type(self):
+        &#34;&#34;&#34;
+        Get the task type of the model
+
+        Returns
+        ---------------------------
+        out: str
+            Task type of the model: &#39;classification&#39; or &#39;regression&#39;
+        &#34;&#34;&#34;
+        return self._task_type
+
     def fit(self, x_train, y_train, **kwargs):
         &#34;&#34;&#34;
         Fit Model
@@ -179,8 +202,9 @@ class ModelHandler:
         **kwargs:
             Extra kwargs passed on to model.fit() method
         &#34;&#34;&#34;
-        n_classes = len(np.unique(y_train))
-        self._n_classes = n_classes
+        if self._task_type == &#39;classification&#39;:
+            n_classes = len(np.unique(y_train))
+            self._n_classes = n_classes
         if self.training_columns is None:
             self.training_columns = list(x_train.columns)
 
@@ -189,7 +213,6 @@ class ModelHandler:
     def predict(self, x_test, output_margin=True, **kwargs):
         &#34;&#34;&#34;
         Return model prediction for the array x_test
-
         Parameters
         --------------------------------------
         x_test: hipe4ml tree_handler, array-like, sparse matrix
@@ -197,13 +220,15 @@ class ModelHandler:
 
         output_margin: bool
             Whether to output the raw untransformed margin value. If False model
-            probabilities are returned
+            probabilities are returned. Not used when task_type is &#39;regression&#39;.
 
         **kwargs:
-            Extra kwargs passed on to the model prediction function:
-            - predict() (xgboost) or decision_function() (sklearn) if output_margin==True
+            Extra kwargs passed on to the following model prediction function:
+            if (task_type == &#39;classification&#39;)
+            - predict() (XGBoost and LGBM) or decision_function() (sklearn) if output_margin==True
             - predict_proba() if output_margin==False
-
+            if (task_type == &#39;regression&#39;)
+            - predict()
 
         Returns
         ---------------------------------------
@@ -215,25 +240,34 @@ class ModelHandler:
 
         x_test = x_test[self.training_columns]
 
+        # regression
+        if self._task_type == &#39;regression&#39;:
+            return self.model.predict(x_test, **kwargs)
+
+        # classification
         if output_margin:
             if self.model_string == &#39;xgboost&#39;:
-                pred = self.model.predict(x_test, True, **kwargs)
+                return self.model.predict(x_test, output_margin=True, **kwargs)
+            if self.model_string == &#39;lightgbm&#39;:
+                return self.model.predict(x_test, raw_score=True, **kwargs)
             if self.model_string == &#39;sklearn&#39;:
-                pred = self.model.decision_function(x_test, **kwargs).ravel()
-        else:
-            pred = self.model.predict_proba(x_test, **kwargs)
-            # in case of binary classification return only the scores of
-            # the signal class
-            if pred.shape[1] &lt;= 2:
-                pred = pred[:, 1]
+                if not hasattr(self.model, &#39;decision_function&#39;):
+                    raise ValueError(
+                        &#34;This Model does not support a decision_function(): use output_margin=False&#34;)
+                return self.model.decision_function(x_test, **kwargs).ravel()
 
+        pred = self.model.predict_proba(x_test, **kwargs)
+        # in case of binary classification return only the scores of
+        # the signal class
+        if pred.shape[1] &lt;= 2:
+            pred = pred[:, 1]
         return pred
 
     def train_test_model(self, data, return_prediction=False, output_margin=False, average=&#39;macro&#39;,
                          multi_class_opt=&#39;raise&#39;, **kwargs):
         &#34;&#34;&#34;
         Perform the training and the testing of the model. The model performance is estimated
-        using the ROC AUC metric
+        using the ROC AUC metric for classification and the MSE for regression.
 
         Parameters
         ----------------------------------------------
@@ -248,7 +282,7 @@ class ModelHandler:
 
         output_margin: bool
             Whether to output the raw untransformed margin value. If False model
-            probabilities are returned
+            probabilities are returned. Not used when task_type is &#39;regression&#39;.
 
         average: string
             Option for the average of ROC AUC scores used only in case of multi-classification.
@@ -273,19 +307,25 @@ class ModelHandler:
         # get number of classes
         n_classes = len(np.unique(data[1]))
         self._n_classes = n_classes
-        print(&#39;Number of detected classes:&#39;, n_classes)
+        print(&#39;==============================&#39;)
+        print(f&#34;Training {self.model_string} model for {self._task_type}&#34;)
+        if self._task_type == &#39;classification&#39;:
+            print(&#39;Number of detected classes:&#39;, n_classes)
 
         # final training with the optimized hyperparams
-        print(&#39;Training the final model: ...&#39;, end=&#39;\r&#39;)
+        print(&#39;Training the model: ...&#39;)
         self.fit(data[0], data[1], **kwargs)
-        print(&#39;Training the final model: Done!&#39;)
-        print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
+        print(&#39;Training the model: Done!&#39;)
+        print(&#39;Testing the model: ...&#39;)
         y_pred = self.predict(data[2], output_margin=output_margin)
-        roc_score = roc_auc_score(
-            data[3], y_pred, average=average, multi_class=multi_class_opt)
+        if self._task_type == &#39;classification&#39;:
+            roc_score = roc_auc_score(
+                data[3], y_pred, average=average, multi_class=multi_class_opt)
+            print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
+        else:
+            mse_score = mean_squared_error(data[3], y_pred)
+            print(f&#39;Mean squared error: {mse_score:.6f}&#39;)
         print(&#39;Testing the model: Done!&#39;)
-
-        print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
         print(&#39;==============================&#39;)
         if return_prediction:
             return y_pred
@@ -373,9 +413,11 @@ class ModelHandler:
 
             for key in hyperparams_ranges:
                 if isinstance(hyperparams_ranges[key][0], int):
-                    params[key] = trial.suggest_int(key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
+                    params[key] = trial.suggest_int(
+                        key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
                 elif isinstance(hyperparams_ranges[key][0], float):
-                    params[key] = trial.suggest_uniform(key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
+                    params[key] = trial.suggest_uniform(
+                        key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
 
             return params
 
@@ -390,7 +432,8 @@ class ModelHandler:
             with open(resume_study, &#39;rb&#39;) as resume_study_file:
                 study = pickle.load(resume_study_file)
         else:
-            study = optuna.create_study(direction=direction, sampler=optuna_sampler)
+            study = optuna.create_study(
+                direction=direction, sampler=optuna_sampler)
 
         study.optimize(__objective, **kwargs)
 
@@ -462,7 +505,8 @@ class ModelHandler:
             self.model_params = loaded_model.get_model_params()
             self.model.set_params(**self.model_params)
             self.model_string = loaded_model.get_model_module()
-            self._n_classes = loaded_model.get_n_classes()</code></pre>
+            self._n_classes = loaded_model.get_n_classes()
+            self._task_type = loaded_model.get_task_type()</code></pre>
 </details>
 </section>
 <section>
@@ -476,15 +520,15 @@ class ModelHandler:
 <dl>
 <dt id="hipe4ml.model_handler.ModelHandler"><code class="flex name class">
 <span>class <span class="ident">ModelHandler</span></span>
-<span>(</span><span>input_model=None, training_columns=None, model_params=None)</span>
+<span>(</span><span>input_model=None, training_columns=None, model_params=None, task_type='classification')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class used for wrapping the models from different ML libraries to
-build a new model with common methods. Currently only XGBoost
-(through it's sklearn interface) and sklearn models are supported.</p>
+build a new model with common methods. Currently LightGBM, XGBoost
+(through their sklearn interface) and sklearn models are supported.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>input_model</code></strong> :&ensp;<code>xgboost</code> or <code>sklearn model</code></dt>
+<dt><strong><code>input_model</code></strong> :&ensp;<code>XGBoost, LightGBM</code> or <code>sklearn model</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>training_columns</code></strong> :&ensp;<code>list</code></dt>
 <dd>Contains the name of the features used for the training.
@@ -493,6 +537,8 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 <dd>Model hyper-parameter values. For
 example (XGBoost): max_depth, learning_rate,
 n_estimators, gamma, min_child_weight, &hellip;</dd>
+<dt><strong><code>task_type</code></strong> :&ensp;<code>str</code></dt>
+<dd>Task type of the model: 'classification' or 'regression'</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -501,12 +547,12 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 <pre><code class="python">class ModelHandler:
     &#34;&#34;&#34;
     Class used for wrapping the models from different ML libraries to
-    build a new model with common methods. Currently only XGBoost
-    (through it&#39;s sklearn interface) and sklearn models are supported.
+    build a new model with common methods. Currently LightGBM, XGBoost
+    (through their sklearn interface) and sklearn models are supported.
 
     Parameters
     -------------------------------------------------
-    input_model: xgboost or sklearn model
+    input_model: XGBoost, LightGBM or sklearn model
 
     training_columns: list
         Contains the name of the features used for the training.
@@ -516,16 +562,28 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         Model hyper-parameter values. For
         example (XGBoost): max_depth, learning_rate,
         n_estimators, gamma, min_child_weight, ...
+
+    task_type: str
+        Task type of the model: &#39;classification&#39; or &#39;regression&#39;
     &#34;&#34;&#34;
 
-    def __init__(self, input_model=None, training_columns=None, model_params=None):
+    def __init__(self, input_model=None, training_columns=None, model_params=None, task_type=&#39;classification&#39;):
         self.model = input_model
         self.training_columns = training_columns
         self.model_params = model_params
         self._n_classes = None
+        self._task_type = task_type
+        if self._task_type not in [&#39;classification&#39;, &#39;regression&#39;]:
+            raise ValueError(
+                &#34;Task type must be either &#39;classification&#39; or &#39;regression&#39;&#34;)
 
         if self.model is not None:
-            self.model_string = inspect.getmodule(self.model).__name__.partition(&#39;.&#39;)[0]
+            self.model_string = inspect.getmodule(
+                self.model).__name__.partition(&#39;.&#39;)[0]
+
+            if self.model_string not in [&#34;xgboost&#34;, &#34;lightgbm&#34;, &#34;sklearn&#34;]:
+                raise ValueError(
+                    &#34;Model must be either &#39;xgboost&#39;, &#39;lightgbm&#39; or &#39;sklearn&#39;&#34;)
 
             if self.model_params is None:
                 self.model_params = self.model.get_params()
@@ -590,7 +648,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
         Returns
         ---------------------------
-        out: sklearn or XGBoost model
+        out: XGBoost, LGBM or sklearn model
         &#34;&#34;&#34;
         return self.model
 
@@ -617,6 +675,17 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         &#34;&#34;&#34;
         return self._n_classes
 
+    def get_task_type(self):
+        &#34;&#34;&#34;
+        Get the task type of the model
+
+        Returns
+        ---------------------------
+        out: str
+            Task type of the model: &#39;classification&#39; or &#39;regression&#39;
+        &#34;&#34;&#34;
+        return self._task_type
+
     def fit(self, x_train, y_train, **kwargs):
         &#34;&#34;&#34;
         Fit Model
@@ -632,8 +701,9 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         **kwargs:
             Extra kwargs passed on to model.fit() method
         &#34;&#34;&#34;
-        n_classes = len(np.unique(y_train))
-        self._n_classes = n_classes
+        if self._task_type == &#39;classification&#39;:
+            n_classes = len(np.unique(y_train))
+            self._n_classes = n_classes
         if self.training_columns is None:
             self.training_columns = list(x_train.columns)
 
@@ -642,7 +712,6 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
     def predict(self, x_test, output_margin=True, **kwargs):
         &#34;&#34;&#34;
         Return model prediction for the array x_test
-
         Parameters
         --------------------------------------
         x_test: hipe4ml tree_handler, array-like, sparse matrix
@@ -650,13 +719,15 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
         output_margin: bool
             Whether to output the raw untransformed margin value. If False model
-            probabilities are returned
+            probabilities are returned. Not used when task_type is &#39;regression&#39;.
 
         **kwargs:
-            Extra kwargs passed on to the model prediction function:
-            - predict() (xgboost) or decision_function() (sklearn) if output_margin==True
+            Extra kwargs passed on to the following model prediction function:
+            if (task_type == &#39;classification&#39;)
+            - predict() (XGBoost and LGBM) or decision_function() (sklearn) if output_margin==True
             - predict_proba() if output_margin==False
-
+            if (task_type == &#39;regression&#39;)
+            - predict()
 
         Returns
         ---------------------------------------
@@ -668,25 +739,34 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
         x_test = x_test[self.training_columns]
 
+        # regression
+        if self._task_type == &#39;regression&#39;:
+            return self.model.predict(x_test, **kwargs)
+
+        # classification
         if output_margin:
             if self.model_string == &#39;xgboost&#39;:
-                pred = self.model.predict(x_test, True, **kwargs)
+                return self.model.predict(x_test, output_margin=True, **kwargs)
+            if self.model_string == &#39;lightgbm&#39;:
+                return self.model.predict(x_test, raw_score=True, **kwargs)
             if self.model_string == &#39;sklearn&#39;:
-                pred = self.model.decision_function(x_test, **kwargs).ravel()
-        else:
-            pred = self.model.predict_proba(x_test, **kwargs)
-            # in case of binary classification return only the scores of
-            # the signal class
-            if pred.shape[1] &lt;= 2:
-                pred = pred[:, 1]
+                if not hasattr(self.model, &#39;decision_function&#39;):
+                    raise ValueError(
+                        &#34;This Model does not support a decision_function(): use output_margin=False&#34;)
+                return self.model.decision_function(x_test, **kwargs).ravel()
 
+        pred = self.model.predict_proba(x_test, **kwargs)
+        # in case of binary classification return only the scores of
+        # the signal class
+        if pred.shape[1] &lt;= 2:
+            pred = pred[:, 1]
         return pred
 
     def train_test_model(self, data, return_prediction=False, output_margin=False, average=&#39;macro&#39;,
                          multi_class_opt=&#39;raise&#39;, **kwargs):
         &#34;&#34;&#34;
         Perform the training and the testing of the model. The model performance is estimated
-        using the ROC AUC metric
+        using the ROC AUC metric for classification and the MSE for regression.
 
         Parameters
         ----------------------------------------------
@@ -701,7 +781,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
         output_margin: bool
             Whether to output the raw untransformed margin value. If False model
-            probabilities are returned
+            probabilities are returned. Not used when task_type is &#39;regression&#39;.
 
         average: string
             Option for the average of ROC AUC scores used only in case of multi-classification.
@@ -726,19 +806,25 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
         # get number of classes
         n_classes = len(np.unique(data[1]))
         self._n_classes = n_classes
-        print(&#39;Number of detected classes:&#39;, n_classes)
+        print(&#39;==============================&#39;)
+        print(f&#34;Training {self.model_string} model for {self._task_type}&#34;)
+        if self._task_type == &#39;classification&#39;:
+            print(&#39;Number of detected classes:&#39;, n_classes)
 
         # final training with the optimized hyperparams
-        print(&#39;Training the final model: ...&#39;, end=&#39;\r&#39;)
+        print(&#39;Training the model: ...&#39;)
         self.fit(data[0], data[1], **kwargs)
-        print(&#39;Training the final model: Done!&#39;)
-        print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
+        print(&#39;Training the model: Done!&#39;)
+        print(&#39;Testing the model: ...&#39;)
         y_pred = self.predict(data[2], output_margin=output_margin)
-        roc_score = roc_auc_score(
-            data[3], y_pred, average=average, multi_class=multi_class_opt)
+        if self._task_type == &#39;classification&#39;:
+            roc_score = roc_auc_score(
+                data[3], y_pred, average=average, multi_class=multi_class_opt)
+            print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
+        else:
+            mse_score = mean_squared_error(data[3], y_pred)
+            print(f&#39;Mean squared error: {mse_score:.6f}&#39;)
         print(&#39;Testing the model: Done!&#39;)
-
-        print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
         print(&#39;==============================&#39;)
         if return_prediction:
             return y_pred
@@ -826,9 +912,11 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
             for key in hyperparams_ranges:
                 if isinstance(hyperparams_ranges[key][0], int):
-                    params[key] = trial.suggest_int(key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
+                    params[key] = trial.suggest_int(
+                        key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
                 elif isinstance(hyperparams_ranges[key][0], float):
-                    params[key] = trial.suggest_uniform(key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
+                    params[key] = trial.suggest_uniform(
+                        key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
 
             return params
 
@@ -843,7 +931,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             with open(resume_study, &#39;rb&#39;) as resume_study_file:
                 study = pickle.load(resume_study_file)
         else:
-            study = optuna.create_study(direction=direction, sampler=optuna_sampler)
+            study = optuna.create_study(
+                direction=direction, sampler=optuna_sampler)
 
         study.optimize(__objective, **kwargs)
 
@@ -915,7 +1004,8 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
             self.model_params = loaded_model.get_model_params()
             self.model.set_params(**self.model_params)
             self.model_string = loaded_model.get_model_module()
-            self._n_classes = loaded_model.get_n_classes()</code></pre>
+            self._n_classes = loaded_model.get_n_classes()
+            self._task_type = loaded_model.get_task_type()</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -1021,8 +1111,9 @@ Extra kwargs passed on to model.fit() method</p></div>
     **kwargs:
         Extra kwargs passed on to model.fit() method
     &#34;&#34;&#34;
-    n_classes = len(np.unique(y_train))
-    self._n_classes = n_classes
+    if self._task_type == &#39;classification&#39;:
+        n_classes = len(np.unique(y_train))
+        self._n_classes = n_classes
     if self.training_columns is None:
         self.training_columns = list(x_train.columns)
 
@@ -1120,7 +1211,7 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 <div class="desc"><p>Get the original unwrapped model</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>sklearn</code> or <code>XGBoost model</code></dt>
+<dt><strong><code>out</code></strong> :&ensp;<code>XGBoost, LGBM</code> or <code>sklearn model</code></dt>
 <dd>&nbsp;</dd>
 </dl></div>
 <details class="source">
@@ -1133,9 +1224,35 @@ n_estimators, gamma, min_child_weight, &hellip;</dd>
 
     Returns
     ---------------------------
-    out: sklearn or XGBoost model
+    out: XGBoost, LGBM or sklearn model
     &#34;&#34;&#34;
     return self.model</code></pre>
+</details>
+</dd>
+<dt id="hipe4ml.model_handler.ModelHandler.get_task_type"><code class="name flex">
+<span>def <span class="ident">get_task_type</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get the task type of the model</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
+<dd>Task type of the model: 'classification' or 'regression'</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_task_type(self):
+    &#34;&#34;&#34;
+    Get the task type of the model
+
+    Returns
+    ---------------------------
+    out: str
+        Task type of the model: &#39;classification&#39; or &#39;regression&#39;
+    &#34;&#34;&#34;
+    return self._task_type</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.get_training_columns"><code class="name flex">
@@ -1197,7 +1314,8 @@ Example: ['dEdx', 'pT', 'ct']</dd>
         self.model_params = loaded_model.get_model_params()
         self.model.set_params(**self.model_params)
         self.model_string = loaded_model.get_model_module()
-        self._n_classes = loaded_model.get_n_classes()</code></pre>
+        self._n_classes = loaded_model.get_n_classes()
+        self._task_type = loaded_model.get_task_type()</code></pre>
 </details>
 </dd>
 <dt id="hipe4ml.model_handler.ModelHandler.optimize_params_optuna"><code class="name flex">
@@ -1345,9 +1463,11 @@ the study is not saved into a file.</dd>
 
         for key in hyperparams_ranges:
             if isinstance(hyperparams_ranges[key][0], int):
-                params[key] = trial.suggest_int(key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
+                params[key] = trial.suggest_int(
+                    key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
             elif isinstance(hyperparams_ranges[key][0], float):
-                params[key] = trial.suggest_uniform(key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
+                params[key] = trial.suggest_uniform(
+                    key, hyperparams_ranges[key][0], hyperparams_ranges[key][1])
 
         return params
 
@@ -1362,7 +1482,8 @@ the study is not saved into a file.</dd>
         with open(resume_study, &#39;rb&#39;) as resume_study_file:
             study = pickle.load(resume_study_file)
     else:
-        study = optuna.create_study(direction=direction, sampler=optuna_sampler)
+        study = optuna.create_study(
+            direction=direction, sampler=optuna_sampler)
 
     study.optimize(__objective, **kwargs)
 
@@ -1388,19 +1509,23 @@ the study is not saved into a file.</dd>
 <span>def <span class="ident">predict</span></span>(<span>self, x_test, output_margin=True, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return model prediction for the array x_test</p>
-<h2 id="parameters">Parameters</h2>
+<div class="desc"><p>Return model prediction for the array x_test
+Parameters</p>
+<hr>
 <dl>
 <dt><strong><code>x_test</code></strong> :&ensp;<code>hipe4ml tree_handler, array-like, sparse matrix</code></dt>
 <dd>The input sample.</dd>
 <dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Whether to output the raw untransformed margin value. If False model
-probabilities are returned</dd>
+probabilities are returned. Not used when task_type is 'regression'.</dd>
 </dl>
 <p>**kwargs:
-Extra kwargs passed on to the model prediction function:
-- predict() (xgboost) or decision_function() (sklearn) if output_margin==True
-- predict_proba() if output_margin==False</p>
+Extra kwargs passed on to the following model prediction function:
+if (task_type == 'classification')
+- predict() (XGBoost and LGBM) or decision_function() (sklearn) if output_margin==True
+- predict_proba() if output_margin==False
+if (task_type == 'regression')
+- predict()</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>out</code></strong> :&ensp;<code>numpy array</code></dt>
@@ -1413,7 +1538,6 @@ Extra kwargs passed on to the model prediction function:
 <pre><code class="python">def predict(self, x_test, output_margin=True, **kwargs):
     &#34;&#34;&#34;
     Return model prediction for the array x_test
-
     Parameters
     --------------------------------------
     x_test: hipe4ml tree_handler, array-like, sparse matrix
@@ -1421,13 +1545,15 @@ Extra kwargs passed on to the model prediction function:
 
     output_margin: bool
         Whether to output the raw untransformed margin value. If False model
-        probabilities are returned
+        probabilities are returned. Not used when task_type is &#39;regression&#39;.
 
     **kwargs:
-        Extra kwargs passed on to the model prediction function:
-        - predict() (xgboost) or decision_function() (sklearn) if output_margin==True
+        Extra kwargs passed on to the following model prediction function:
+        if (task_type == &#39;classification&#39;)
+        - predict() (XGBoost and LGBM) or decision_function() (sklearn) if output_margin==True
         - predict_proba() if output_margin==False
-
+        if (task_type == &#39;regression&#39;)
+        - predict()
 
     Returns
     ---------------------------------------
@@ -1439,18 +1565,27 @@ Extra kwargs passed on to the model prediction function:
 
     x_test = x_test[self.training_columns]
 
+    # regression
+    if self._task_type == &#39;regression&#39;:
+        return self.model.predict(x_test, **kwargs)
+
+    # classification
     if output_margin:
         if self.model_string == &#39;xgboost&#39;:
-            pred = self.model.predict(x_test, True, **kwargs)
+            return self.model.predict(x_test, output_margin=True, **kwargs)
+        if self.model_string == &#39;lightgbm&#39;:
+            return self.model.predict(x_test, raw_score=True, **kwargs)
         if self.model_string == &#39;sklearn&#39;:
-            pred = self.model.decision_function(x_test, **kwargs).ravel()
-    else:
-        pred = self.model.predict_proba(x_test, **kwargs)
-        # in case of binary classification return only the scores of
-        # the signal class
-        if pred.shape[1] &lt;= 2:
-            pred = pred[:, 1]
+            if not hasattr(self.model, &#39;decision_function&#39;):
+                raise ValueError(
+                    &#34;This Model does not support a decision_function(): use output_margin=False&#34;)
+            return self.model.decision_function(x_test, **kwargs).ravel()
 
+    pred = self.model.predict_proba(x_test, **kwargs)
+    # in case of binary classification return only the scores of
+    # the signal class
+    if pred.shape[1] &lt;= 2:
+        pred = pred[:, 1]
     return pred</code></pre>
 </details>
 </dd>
@@ -1518,7 +1653,7 @@ Example: ['dEdx', 'pT', 'ct']</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Perform the training and the testing of the model. The model performance is estimated
-using the ROC AUC metric</p>
+using the ROC AUC metric for classification and the MSE for regression.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>list</code></dt>
@@ -1530,7 +1665,7 @@ test set dataframe, test label array</dd>
 returned</dd>
 <dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Whether to output the raw untransformed margin value. If False model
-probabilities are returned</dd>
+probabilities are returned. Not used when task_type is 'regression'.</dd>
 <dt><strong><code>average</code></strong> :&ensp;<code>string</code></dt>
 <dd>Option for the average of ROC AUC scores used only in case of multi-classification.
 You can choose between 'macro' and 'weighted'. For more information see
@@ -1555,7 +1690,7 @@ returned</dd>
                      multi_class_opt=&#39;raise&#39;, **kwargs):
     &#34;&#34;&#34;
     Perform the training and the testing of the model. The model performance is estimated
-    using the ROC AUC metric
+    using the ROC AUC metric for classification and the MSE for regression.
 
     Parameters
     ----------------------------------------------
@@ -1570,7 +1705,7 @@ returned</dd>
 
     output_margin: bool
         Whether to output the raw untransformed margin value. If False model
-        probabilities are returned
+        probabilities are returned. Not used when task_type is &#39;regression&#39;.
 
     average: string
         Option for the average of ROC AUC scores used only in case of multi-classification.
@@ -1595,19 +1730,25 @@ returned</dd>
     # get number of classes
     n_classes = len(np.unique(data[1]))
     self._n_classes = n_classes
-    print(&#39;Number of detected classes:&#39;, n_classes)
+    print(&#39;==============================&#39;)
+    print(f&#34;Training {self.model_string} model for {self._task_type}&#34;)
+    if self._task_type == &#39;classification&#39;:
+        print(&#39;Number of detected classes:&#39;, n_classes)
 
     # final training with the optimized hyperparams
-    print(&#39;Training the final model: ...&#39;, end=&#39;\r&#39;)
+    print(&#39;Training the model: ...&#39;)
     self.fit(data[0], data[1], **kwargs)
-    print(&#39;Training the final model: Done!&#39;)
-    print(&#39;Testing the model: ...&#39;, end=&#39;\r&#39;)
+    print(&#39;Training the model: Done!&#39;)
+    print(&#39;Testing the model: ...&#39;)
     y_pred = self.predict(data[2], output_margin=output_margin)
-    roc_score = roc_auc_score(
-        data[3], y_pred, average=average, multi_class=multi_class_opt)
+    if self._task_type == &#39;classification&#39;:
+        roc_score = roc_auc_score(
+            data[3], y_pred, average=average, multi_class=multi_class_opt)
+        print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
+    else:
+        mse_score = mean_squared_error(data[3], y_pred)
+        print(f&#39;Mean squared error: {mse_score:.6f}&#39;)
     print(&#39;Testing the model: Done!&#39;)
-
-    print(f&#39;ROC_AUC_score: {roc_score:.6f}&#39;)
     print(&#39;==============================&#39;)
     if return_prediction:
         return y_pred
@@ -1642,6 +1783,7 @@ returned</dd>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_model_params" href="#hipe4ml.model_handler.ModelHandler.get_model_params">get_model_params</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_n_classes" href="#hipe4ml.model_handler.ModelHandler.get_n_classes">get_n_classes</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_original_model" href="#hipe4ml.model_handler.ModelHandler.get_original_model">get_original_model</a></code></li>
+<li><code><a title="hipe4ml.model_handler.ModelHandler.get_task_type" href="#hipe4ml.model_handler.ModelHandler.get_task_type">get_task_type</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.get_training_columns" href="#hipe4ml.model_handler.ModelHandler.get_training_columns">get_training_columns</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.load_model_handler" href="#hipe4ml.model_handler.ModelHandler.load_model_handler">load_model_handler</a></code></li>
 <li><code><a title="hipe4ml.model_handler.ModelHandler.optimize_params_optuna" href="#hipe4ml.model_handler.ModelHandler.optimize_params_optuna">optimize_params_optuna</a></code></li>
