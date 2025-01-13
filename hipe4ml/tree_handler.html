@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>hipe4ml.tree_handler API documentation</title>
-<meta name="description" content="Simple module with a class to manage the data used in the analysis" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="Simple module with a class to manage the data used in the analysis">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -23,558 +37,6 @@
 </header>
 <section id="section-intro">
 <p>Simple module with a class to manage the data used in the analysis</p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">&#34;&#34;&#34;
-Simple module with a class to manage the data used in the analysis
-&#34;&#34;&#34;
-import os.path
-import copy
-from concurrent.futures import ThreadPoolExecutor
-import numpy as np
-import pandas as pd
-import uproot
-
-
-class TreeHandler:
-    &#34;&#34;&#34;
-    Class for storing and managing the data of a ROOT tree from a .root file
-    or a pandas.DataFrame from a .parquet file
-    &#34;&#34;&#34;
-
-    def __init__(self, file_name=None, tree_name=None, columns_names=None, **kwds):
-        &#34;&#34;&#34;
-        Open the file in which the selected tree leaves are converted
-        into pandas dataframe columns. If tree_name is not provided file_name is
-        assumed to be associated to a .parquet file
-
-        Parameters
-        ------------------------------------------------
-        file_name: str or list of str
-            Name of the input file where the data sit or list of input files
-
-        tree_name: str
-            Name of the tree within the input file, must be the same for all files.
-            If None the method pandas.read_parquet is called
-
-        columns_name: list
-            List of the names of the branches that one wants to analyse. If columns_names is
-            not specified all the branches are converted
-
-        **kwds: extra arguments are passed on to the uproot.TTree.arrays() or pandas.read_parquet() methods:
-                https://uproot.readthedocs.io/en/latest/uproot.behaviors.TTree.TTree.html#uproot.behaviors.TTree.TTree.arrays
-                https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_parquet.html#pandas.read_parquet
-        &#34;&#34;&#34;
-        self._tree = tree_name
-        self._full_data_frame = None
-        if file_name is not None:
-            self._full_data_frame = pd.DataFrame()
-            self._files = file_name if isinstance(file_name, list) else [file_name]
-            for file in self._files:
-                if self._tree is not None:
-                    self._full_data_frame = pd.concat(
-                        [self._full_data_frame,
-                         uproot.open(f&#39;{file}:{self._tree}&#39;).arrays(filter_name=columns_names, library=&#39;pd&#39;, **kwds)],
-                        ignore_index=True, copy=False)
-                else:
-                    self._full_data_frame = pd.concat(
-                        [self._full_data_frame, pd.read_parquet(file, columns=columns_names, **kwds)],
-                        ignore_index=True, copy=False)
-        self._preselections = None
-        self._projection_variable = None
-        self._projection_binning = None
-        self._sliced_df_list = None
-
-    def __getitem__(self, column):
-        &#34;&#34;&#34;
-        Access to the elements of the full data frame using
-        a dictionary-like syntax. Accessing to the slices
-        of the data frame in this way is not supported
-
-        Parameters
-        ------------------------------------------------
-        column: string or list
-            Column name/s of the full data frame
-
-        &#34;&#34;&#34;
-        return self._full_data_frame[column]
-
-    def __len__(self):
-        &#34;&#34;&#34;
-        Evaluate the number of entries in the full data frame
-        &#34;&#34;&#34;
-        return len(self._full_data_frame)
-
-    def get_handler_from_large_file(self, file_name, tree_name, model_handler=None, preselection=&#39;&#39;,
-                                    output_margin=True, max_workers=None):
-        &#34;&#34;&#34;
-        Read a ROOT.TTree in different lazy chuncks. Chuncks are read sequentially or in parallel
-        and eventually pre-selections or ML selections are applied. This allows to preserve the
-        memory usage and speed-up the reading. Chuncks size is decided automatically
-
-        Parameters
-        -----------------------------------------------
-        file_name: str or list of str
-            Name of the input file where the data sit or list of input files
-
-        tree_name: str
-            Name of the tree within the input file, must be the same for all files
-
-        model_handler: hipe4ml ModelHandler
-            Model handler to be applied as a preselection on the data contained in the original
-            tree. A column named model_output is added to the tree_handler. In case of multi-classification
-            a new column is added for each class with name: model_output_{i}
-
-        preselection: str
-            String containing the cuts to be applied as preselection on the data contained in the original
-            tree. The string syntax is the one required in the pandas.DataFrame.query() method.
-            You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.
-            You can apply ML based preselections like in the example below:
-            - &#34;model_output &gt; @score_cut&#34; # binary classification
-            - &#34;model_output_0 &gt; @score_cut[0] and model_output_1 &lt;= @score_cut[1]&#34; # multi-classification
-
-        output_margin: bool
-            Whether to predict the raw untransformed margin value. If False model
-            probabilities are returned
-
-        max_workers: int
-            Maximum number of workers employed to read the chuncks. If max_workers is None or not given,
-            it will default to the number of processors on the machine, multiplied by 5. If max_workers==-1
-            the multi-threading computation is turned off.
-            More details in:
-            https://docs.python.org/3/library/concurrent.futures.html
-
-        &#34;&#34;&#34;
-        self._files = file_name if isinstance(file_name, list) else [file_name]
-        self._tree = tree_name
-        self._preselections = preselection
-        inputs = [f&#39;{file_name}:{tree_name}&#39; for file_name in self._files]
-
-        executor = ThreadPoolExecutor(max_workers) if max_workers != -1 else None
-        iterator = uproot.iterate(inputs, library=&#39;pd&#39;, decompression_executor=executor,
-                                  interpretation_executor=executor)
-
-        result = []
-        for data in iterator:
-            if model_handler is not None:
-                predictions = model_handler.predict(data, output_margin)
-                n_classes = model_handler.get_n_classes()
-                if n_classes &gt; 2:
-                    for i_class in range(n_classes):
-                        column_name = f&#39;model_output_{i_class}&#39;
-                        data[column_name] = predictions[:, i_class]
-                else:
-                    column_name = &#34;model_output&#34;
-                    data[column_name] = predictions
-
-            if preselection:
-                data = data.query(preselection)
-            result.append(data)
-
-        result = pd.concat(result)
-        self._full_data_frame = result
-
-    def set_data_frame(self, df_orig):
-        &#34;&#34;&#34;
-        Set the pandas DataFrame in the TreeHandler
-
-        Parameters
-        ------------------------------------------------
-        df: pandas.DataFrame
-            DataFrame stored in the TreeHandler
-        &#34;&#34;&#34;
-        self._full_data_frame = df_orig
-
-    def get_data_frame(self):
-        &#34;&#34;&#34;
-        Get the pandas DataFrame stored in the TreeHandler
-
-        Returns
-        ------------------------------------------------
-        out: pandas.DataFrame
-            DataFrame stored in the TreeHandler
-        &#34;&#34;&#34;
-        return self._full_data_frame
-
-    def get_preselections(self):
-        &#34;&#34;&#34;
-        Get the preselections applied to the stored DataFrame
-
-        Returns
-        ------------------------------------------------
-        out: str
-            String containing the cuts applied to the stored DataFrame
-        &#34;&#34;&#34;
-        return self._preselections
-
-    def get_projection_variable(self):
-        &#34;&#34;&#34;
-        Get the name of the sliced variable
-
-        Returns
-        ------------------------------------------------
-        out: str
-            Sliced variable
-        &#34;&#34;&#34;
-        return self._projection_variable
-
-    def get_projection_binning(self):
-        &#34;&#34;&#34;
-        Get the bins used for slicing the DataFrame
-
-        Returns
-        ------------------------------------------------
-        out: list
-            Each element of the list is a list containing the
-            bin edges
-        &#34;&#34;&#34;
-        return self._projection_binning
-
-    def get_n_cand(self):
-        &#34;&#34;&#34;
-        Get the number of candidates stored in the full DataFrame
-
-        Returns
-        ------------------------------------------------
-        out: int
-           Number of candidates
-        &#34;&#34;&#34;
-        return len(self._full_data_frame)
-
-    def get_var_names(self):
-        &#34;&#34;&#34;
-        Get a list containing the name of the variables
-
-        Returns
-        ------------------------------------------------
-        out: list
-           Names of the variables
-        &#34;&#34;&#34;
-        return list(self._full_data_frame.columns)
-
-    def get_slice(self, n_bin):
-        &#34;&#34;&#34;
-        Get the n-th slice of the original DataFrame
-
-        Parameters
-        ------------------------------------------------
-        n_bin: int
-            n-th element of _projection_binning list.
-
-        Returns
-        ------------------------------------------------
-        out: pandas.DataFrame
-            N-th Slice of the original DataFrame
-        &#34;&#34;&#34;
-        return self._sliced_df_list[n_bin]
-
-    def get_sliced_df_list(self):
-        &#34;&#34;&#34;
-        Get the list containing the slices of the orginal
-        DataFrame
-
-        Returns
-        ------------------------------------------------
-        out: list
-            List containing the slices of the orginal
-            DataFrame
-        &#34;&#34;&#34;
-        return self._sliced_df_list
-
-    def apply_preselections(self, preselections, inplace=True, **kwds):
-        &#34;&#34;&#34;
-        Apply preselections to data
-
-        Parameters
-        ------------------------------------------------
-        preselection: str
-            String containing the cuts to be applied as preselection on the data contained in the original
-            tree. The string syntax is the one required in the pandas.DataFrame.query() method.
-            You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.
-
-        inplace: bool
-            If True, the preselected dataframe replaces the initial dataframe. Otherwise return a copy of the
-            preselected df
-
-        **kwds: extra arguments are passed on to the pandas.DataFrame.query method:
-                https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html#pandas.DataFrame.query
-
-        Returns
-        ------------------------------------------------
-        out: TreeHandler or None
-            If inplace == True return None is returned and the full DataFrame is replaced
-        &#34;&#34;&#34;
-        if inplace:
-            if self._preselections:
-                self._preselections += &#34; and &#34; + preselections
-            else:
-                self._preselections = preselections
-            self._full_data_frame.query(preselections, inplace=True, **kwds)
-            return None
-
-        new_hndl = copy.deepcopy(self)
-        new_hndl._preselections = preselections  # pylint: disable=W0212
-        new_hndl._full_data_frame.query(preselections, inplace=True, **kwds)  # pylint: disable=W0212
-        return new_hndl
-
-    def apply_model_handler(self, model_handler, output_margin=True, column_name=None):
-        &#34;&#34;&#34;
-        Apply the ML model to data: a new column is added to the DataFrame
-        If a list is given the application is performed on the slices.
-
-        Parameters
-        ------------------------------------------------
-        model_handler: list or hipe4ml model_handler
-            If a list of handlers(one for each bin) is provided, the ML
-            model is applied to the slices
-
-        output_margin: bool
-            Whether to output the raw untransformed margin value.
-
-        column_name: str
-            Name of the new column with the model output
-        &#34;&#34;&#34;
-        if isinstance(model_handler, list):
-            n_class = model_handler[0].get_n_classes()
-            sliced = True
-        else:
-            sliced = False
-            n_class = model_handler.get_n_classes()
-        if column_name is None:
-            if n_class &gt; 2:
-                column_name = [f&#39;model_output_{i_class}&#39; for i_class in range(n_class)]
-            else:
-                column_name = &#34;model_output&#34;
-
-        if sliced:
-            for (mod_handl, sliced_df) in zip(model_handler, self._sliced_df_list):
-                prediction = mod_handl.predict(sliced_df, output_margin)
-                if n_class &gt; 2:
-                    for i_class in range(n_class):
-                        sliced_df[column_name[i_class]] = prediction[:, i_class]
-                else:
-                    sliced_df[column_name] = prediction
-            return
-
-        prediction = model_handler.predict(self._full_data_frame, output_margin)
-        if n_class &gt; 2:
-            for i_class in range(n_class):
-                self._full_data_frame[column_name[i_class]] = prediction[:, i_class]
-            return
-
-        self._full_data_frame[column_name] = prediction
-
-    def get_subset(self, selections=None, frac=None, size=None, rndm_state=None):
-        &#34;&#34;&#34;
-        Returns a TreeHandler containing a subset of the data
-
-        Parameters
-        ------------------------------------------------
-        selection: str
-            String containing the cuts to be applied as preselection on the data contained in the original
-            tree. The string syntax is the one required in the pandas.DataFrame.query() method.
-            You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.
-
-        frac: float
-            Fraction of candidates to return.
-
-        size: int
-            Number of candidates to return. Cannot be used with frac.
-
-        rndm_state: int or numpy.random.RandomState, optional
-            Seed for the random number generator (if int), or numpy RandomState object, passed to the
-            pandas.DataFrame.sample() method:
-            https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html
-
-
-        Returns
-        ------------------------------------------------
-        out: TreeHandler
-            TreeHandler containing a subset of the current data
-        &#34;&#34;&#34;
-
-        subset = copy.deepcopy(self)
-
-        if selections:
-            subset.apply_preselections(selections, inplace=True)
-        if frac or size:
-            subset.shuffle_data_frame(frac=frac, size=size, inplace=True, random_state=rndm_state)
-        return subset
-
-    def slice_data_frame(self, projection_variable, projection_binning, delete_original_df=False):
-        &#34;&#34;&#34;
-        Create a list containing slices of the orginal DataFrame.
-        The original DataFrame is splitted in N sub-DataFrames following
-        the binning(projection_binning) of a given variable(projected_variable)
-
-        Parameters
-        ------------------------------------------------
-        projection_variable: str
-            Name of the variable that will be sliced in the analysis
-
-        projection_binning: list
-            Binning of the sliced variable should be given as a list of
-            [min, max) values for each bin
-
-        delete_original_df: bool
-            If True delete the original DataFrame. Only the
-            the slice array will be accessible in this case
-        &#34;&#34;&#34;
-
-        self._projection_variable = projection_variable
-        self._projection_binning = projection_binning
-
-        self._sliced_df_list = []
-        for ibin in projection_binning:
-            bin_mask = np.logical_and(
-                self._full_data_frame[projection_variable] &gt;= ibin[0],
-                self._full_data_frame[projection_variable] &lt; ibin[1])
-            self._sliced_df_list.append(self._full_data_frame[bin_mask].copy())
-        if delete_original_df:
-            self._full_data_frame = None
-
-    def shuffle_data_frame(self, size=None, frac=None, inplace=True, **kwds):
-        &#34;&#34;&#34;
-        Extract a random sample from the DataFrame
-
-        Parameters
-        ------------------------------------------------
-        size: int
-            Number of candidates to return. Cannot be used with frac. Default = 1 if
-            frac = None.
-
-        frac: float
-            Fraction of candidates to return. Cannot be used with size.
-
-        inplace: bool
-            If True the shuffled dataframe replaces the initial dataframe. Otherwise return a copy
-            of the shuffled df
-        **kwds: extra arguments are passed on to the pandas.DataFrame.sample method:
-                https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html
-
-        Returns
-        ------------------------------------------------
-        out: TreeHandler or None
-            If inplace == True None is returned and the full DataFrame is replaced
-        &#34;&#34;&#34;
-
-        if inplace:
-            self._full_data_frame = self._full_data_frame.sample(size, frac, **kwds)
-            return None
-
-        new_hndl = copy.deepcopy(self)
-        new_hndl._full_data_frame = self._full_data_frame.sample(size, frac, **kwds)  # pylint: disable=W0212
-        return new_hndl
-
-    def eval_data_frame(self, ev_str, inplace=True, **kwds):
-        &#34;&#34;&#34;
-        Evaluate a string describing operations on DataFrame columns
-
-        Parameters
-        ------------------------------------------------
-        ev_str: str
-            The expression string to evaluate. The string syntax is the one required in the
-            pandas.DataFrame.eval() method.
-
-        inplace: bool
-            If the expression contains an assignment, whether to perform the operation inplace and
-            mutate the existing DataFrame. Otherwise, a new DataFrame is returned.
-
-        **kwds: extra arguments are passed on to the pandas.DataFrame.eval method:
-                https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.eval.html
-
-        Returns
-        ------------------------------------------------
-        out: TreeHandler or None
-            if inplace == True None is returned and the full dataframe is evaluated
-        &#34;&#34;&#34;
-        if inplace:
-            self._full_data_frame.eval(ev_str, inplace=True, **kwds)
-            return None
-
-        new_hndl = copy.deepcopy(self)
-        new_hndl._full_data_frame.eval(ev_str, inplace=True, **kwds)  # pylint: disable=W0212
-        return new_hndl
-
-    def print_summary(self):
-        &#34;&#34;&#34;
-        Print information about the TreeHandler object and its
-        data members
-        &#34;&#34;&#34;
-        print(&#34;\nFile name: &#34;, self._files)
-        print(&#34;Tree name: &#34;, self._tree)
-        print(&#34;DataFrame head:\n&#34;, self._full_data_frame.head(5))
-        print(&#34;\nPreselections:&#34;, self._preselections)
-        print(&#34;Sliced variable: &#34;, self._projection_variable)
-        print(&#34;Slices binning: &#34;, self._projection_binning)
-
-    def write_df_to_parquet_files(self, base_file_name=&#34;TreeDataFrame&#34;, path=&#34;./&#34;, save_slices=False):
-        &#34;&#34;&#34;
-        Write the pandas dataframe to parquet files
-
-        Parameters
-        ------------------------------------------------
-        base_file_name: str
-            Base filename used to save the parquet files
-
-        path: str
-            Base path of the output files
-
-        save_slices: bool
-            If True and the slices are available, single parquet files for each
-            bins are created
-        &#34;&#34;&#34;
-        if self._full_data_frame is not None:
-            name = os.path.join(path, f&#34;{base_file_name}.parquet.gzip&#34;)
-            self._full_data_frame.to_parquet(name, compression=&#34;gzip&#34;)
-        else:
-            print(&#34;\nWarning: original DataFrame not available&#34;)
-        if save_slices:
-            if self._sliced_df_list is not None:
-                for ind, i_bin in enumerate(self._projection_binning):
-                    name = os.path.join(
-                        path, f&#34;{base_file_name}_{self._projection_variable}_{i_bin[0]}_{i_bin[1]}.parquet.gzip&#34;)
-                    self._sliced_df_list[ind].to_parquet(
-                        name, compression=&#34;gzip&#34;)
-            else:
-                print(&#34;\nWarning: slices not available&#34;)
-
-    def write_df_to_root_files(self, base_file_name=&#34;TreeDataFrame&#34;, tree_name=&#34;df&#34;, path=&#34;./&#34;, save_slices=False):
-        &#34;&#34;&#34;
-        Write the pandas dataframe to root files
-
-        Parameters
-        ------------------------------------------------
-        base_file_name: str
-            Base filename used to save the root files
-
-        path: str
-            Base path of the output files
-
-        save_slices: bool
-            If True and the slices are available, single root files for each
-            bins are created
-        &#34;&#34;&#34;
-        if self._full_data_frame is not None:
-            name = os.path.join(path, f&#34;{base_file_name}.root&#34;)
-            out_file = uproot.recreate(name)
-            out_file[tree_name] = self._full_data_frame
-            out_file.close()
-        else:
-            print(&#34;\nWarning: original DataFrame not available&#34;)
-        if save_slices:
-            if self._sliced_df_list is not None:
-                for ind, i_bin in enumerate(self._projection_binning):
-                    name = os.path.join(
-                        path, f&#34;{base_file_name}_{self._projection_variable}_{i_bin[0]}_{i_bin[1]}.root&#34;)
-                    out_file = uproot.recreate(name)
-                    out_file[tree_name] = self._sliced_df_list[ind]
-                    out_file.close()
-            else:
-                print(&#34;\nWarning: slices not available&#34;)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -587,28 +49,9 @@ class TreeHandler:
 <dl>
 <dt id="hipe4ml.tree_handler.TreeHandler"><code class="flex name class">
 <span>class <span class="ident">TreeHandler</span></span>
-<span>(</span><span>file_name=None, tree_name=None, columns_names=None, **kwds)</span>
+<span>(</span><span>file_name=None, tree_name=None, column_names=None, folder_name=None, **kwds)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class for storing and managing the data of a ROOT tree from a .root file
-or a pandas.DataFrame from a .parquet file</p>
-<p>Open the file in which the selected tree leaves are converted
-into pandas dataframe columns. If tree_name is not provided file_name is
-assumed to be associated to a .parquet file</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>str</code></dt>
-<dd>Name of the input file where the data sit or list of input files</dd>
-<dt><strong><code>tree_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of the tree within the input file, must be the same for all files.
-If None the method pandas.read_parquet is called</dd>
-<dt><strong><code>columns_name</code></strong> :&ensp;<code>list</code></dt>
-<dd>List of the names of the branches that one wants to analyse. If columns_names is
-not specified all the branches are converted</dd>
-<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the uproot.TTree.arrays()</code> or <code>pandas.read_parquet() methods:</code></dt>
-<dd><a href="https://uproot.readthedocs.io/en/latest/uproot.behaviors.TTree.TTree.html#uproot.behaviors.TTree.TTree.arrays">https://uproot.readthedocs.io/en/latest/uproot.behaviors.TTree.TTree.html#uproot.behaviors.TTree.TTree.arrays</a>
-<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_parquet.html#pandas.read_parquet">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_parquet.html#pandas.read_parquet</a></dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -619,7 +62,7 @@ not specified all the branches are converted</dd>
     or a pandas.DataFrame from a .parquet file
     &#34;&#34;&#34;
 
-    def __init__(self, file_name=None, tree_name=None, columns_names=None, **kwds):
+    def __init__(self, file_name=None, tree_name=None, column_names=None, folder_name=None, **kwds):
         &#34;&#34;&#34;
         Open the file in which the selected tree leaves are converted
         into pandas dataframe columns. If tree_name is not provided file_name is
@@ -634,9 +77,15 @@ not specified all the branches are converted</dd>
             Name of the tree within the input file, must be the same for all files.
             If None the method pandas.read_parquet is called
 
-        columns_name: list
-            List of the names of the branches that one wants to analyse. If columns_names is
+        column_names: list
+            List of the names of the branches that one wants to analyse. If column_names is
             not specified all the branches are converted
+
+        folder_name: str
+            Name of the folder/folders within the input file. If the folder_name ends with a &#39;*&#39; all the folders
+            containing the string folder_name are read and merged into a single dataframe.
+            Example: folder_name = &#34;DF*&#34; will read all the folders containing the string &#34;DF&#34; and
+            merge them into a single dataframe.
 
         **kwds: extra arguments are passed on to the uproot.TTree.arrays() or pandas.read_parquet() methods:
                 https://uproot.readthedocs.io/en/latest/uproot.behaviors.TTree.TTree.html#uproot.behaviors.TTree.TTree.arrays
@@ -644,23 +93,58 @@ not specified all the branches are converted</dd>
         &#34;&#34;&#34;
         self._tree = tree_name
         self._full_data_frame = None
-        if file_name is not None:
-            self._full_data_frame = pd.DataFrame()
-            self._files = file_name if isinstance(file_name, list) else [file_name]
-            for file in self._files:
-                if self._tree is not None:
-                    self._full_data_frame = pd.concat(
-                        [self._full_data_frame,
-                         uproot.open(f&#39;{file}:{self._tree}&#39;).arrays(filter_name=columns_names, library=&#39;pd&#39;, **kwds)],
-                        ignore_index=True, copy=False)
-                else:
-                    self._full_data_frame = pd.concat(
-                        [self._full_data_frame, pd.read_parquet(file, columns=columns_names, **kwds)],
-                        ignore_index=True, copy=False)
         self._preselections = None
         self._projection_variable = None
         self._projection_binning = None
         self._sliced_df_list = None
+        if file_name is None:
+            return
+
+        self._full_data_frame = pd.DataFrame()
+        self._files = file_name if isinstance(file_name, list) else [file_name]
+        for file in self._files:
+            if self._tree is None:  # read from a parquet file
+                self._full_data_frame = pd.concat(
+                [self._full_data_frame, pd.read_parquet(file, columns=column_names, **kwds)],
+                ignore_index=True, copy=False)
+                continue
+
+            if folder_name is None:
+                self._full_data_frame = pd.concat(
+                    [self._full_data_frame,
+                        uproot.open(f&#39;{file}:{self._tree}&#39;).arrays(filter_name=column_names,
+                        library=&#39;pd&#39;, **kwds)], ignore_index=True, copy=False)
+                continue
+
+            if folder_name[-1] != &#39;*&#39;:
+                self._full_data_frame = pd.concat(
+                    [self._full_data_frame,
+                        uproot.open(f&#39;{file}:{folder_name}/{self._tree}&#39;).arrays(filter_name=column_names,
+                        library=&#39;pd&#39;, **kwds)], ignore_index=True, copy=False)
+                continue
+
+            file_folders = uproot.open(file).keys()
+            # check if there are multiple cycles of the same tree, keep only last one
+            # first we sort to have as first one the last cycle
+            file_folders.sort(reverse=True)
+            file_folders_to_remove = []
+            for ifolder, folder in enumerate(file_folders[1:]):
+                obj_nocycle = folder.split(&#34;;&#34;)[0]
+                if obj_nocycle in file_folders[ifolder]:
+                    file_folders_to_remove.append(folder)
+            for folder_to_remove in file_folders_to_remove:
+                file_folders.remove(folder_to_remove)
+            tree_path_list = []
+            for folder in file_folders:
+                if folder_name[:-1] in folder and self._tree in folder:
+                    tree_path_list.append(folder)
+
+            for tree_path in tree_path_list:
+                print(f&#34;Reading {file}:{tree_path}&#34;)
+                self._full_data_frame = pd.concat(
+                    [self._full_data_frame,
+                        uproot.open(f&#39;{file}:{tree_path}&#39;).arrays(filter_name=column_names,
+                        library=&#39;pd&#39;, **kwds)], ignore_index=True, copy=False)
 
     def __getitem__(self, column):
         &#34;&#34;&#34;
@@ -1150,24 +634,36 @@ not specified all the branches are converted</dd>
             else:
                 print(&#34;\nWarning: slices not available&#34;)</code></pre>
 </details>
+<div class="desc"><p>Class for storing and managing the data of a ROOT tree from a .root file
+or a pandas.DataFrame from a .parquet file</p>
+<p>Open the file in which the selected tree leaves are converted
+into pandas dataframe columns. If tree_name is not provided file_name is
+assumed to be associated to a .parquet file</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>str</code></dt>
+<dd>Name of the input file where the data sit or list of input files</dd>
+<dt><strong><code>tree_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the tree within the input file, must be the same for all files.
+If None the method pandas.read_parquet is called</dd>
+<dt><strong><code>column_names</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of the names of the branches that one wants to analyse. If column_names is
+not specified all the branches are converted</dd>
+<dt><strong><code>folder_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the folder/folders within the input file. If the folder_name ends with a '<em>' all the folders
+containing the string folder_name are read and merged into a single dataframe.
+Example: folder_name = "DF</em>" will read all the folders containing the string "DF" and
+merge them into a single dataframe.</dd>
+<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the uproot.TTree.arrays()</code> or <code>pandas.read_parquet() methods:</code></dt>
+<dd><a href="https://uproot.readthedocs.io/en/latest/uproot.behaviors.TTree.TTree.html#uproot.behaviors.TTree.TTree.arrays">https://uproot.readthedocs.io/en/latest/uproot.behaviors.TTree.TTree.html#uproot.behaviors.TTree.TTree.arrays</a>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_parquet.html#pandas.read_parquet">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_parquet.html#pandas.read_parquet</a></dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="hipe4ml.tree_handler.TreeHandler.apply_model_handler"><code class="name flex">
 <span>def <span class="ident">apply_model_handler</span></span>(<span>self, model_handler, output_margin=True, column_name=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Apply the ML model to data: a new column is added to the DataFrame
-If a list is given the application is performed on the slices.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>model_handler</code></strong> :&ensp;<code>list</code> or <code><a title="hipe4ml" href="index.html">hipe4ml</a> model_handler</code></dt>
-<dd>If a list of handlers(one for each bin) is provided, the ML
-model is applied to the slices</dd>
-<dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Whether to output the raw untransformed margin value.</dd>
-<dt><strong><code>column_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of the new column with the model output</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1219,29 +715,23 @@ model is applied to the slices</dd>
 
     self._full_data_frame[column_name] = prediction</code></pre>
 </details>
+<div class="desc"><p>Apply the ML model to data: a new column is added to the DataFrame
+If a list is given the application is performed on the slices.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>model_handler</code></strong> :&ensp;<code>list</code> or <code><a title="hipe4ml" href="index.html">hipe4ml</a> model_handler</code></dt>
+<dd>If a list of handlers(one for each bin) is provided, the ML
+model is applied to the slices</dd>
+<dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to output the raw untransformed margin value.</dd>
+<dt><strong><code>column_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the new column with the model output</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.apply_preselections"><code class="name flex">
 <span>def <span class="ident">apply_preselections</span></span>(<span>self, preselections, inplace=True, **kwds)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Apply preselections to data</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>preselection</code></strong> :&ensp;<code>str</code></dt>
-<dd>String containing the cuts to be applied as preselection on the data contained in the original
-tree. The string syntax is the one required in the pandas.DataFrame.query() method.
-You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.</dd>
-<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True, the preselected dataframe replaces the initial dataframe. Otherwise return a copy of the
-preselected df</dd>
-<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the pandas.DataFrame.query method:</code></dt>
-<dd><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html#pandas.DataFrame.query">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html#pandas.DataFrame.query</a></dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code> or <code>None</code></dt>
-<dd>If inplace == True return None is returned and the full DataFrame is replaced</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1282,28 +772,29 @@ preselected df</dd>
     new_hndl._full_data_frame.query(preselections, inplace=True, **kwds)  # pylint: disable=W0212
     return new_hndl</code></pre>
 </details>
+<div class="desc"><p>Apply preselections to data</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>preselection</code></strong> :&ensp;<code>str</code></dt>
+<dd>String containing the cuts to be applied as preselection on the data contained in the original
+tree. The string syntax is the one required in the pandas.DataFrame.query() method.
+You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.</dd>
+<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, the preselected dataframe replaces the initial dataframe. Otherwise return a copy of the
+preselected df</dd>
+<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the pandas.DataFrame.query method:</code></dt>
+<dd><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html#pandas.DataFrame.query">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html#pandas.DataFrame.query</a></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code> or <code>None</code></dt>
+<dd>If inplace == True return None is returned and the full DataFrame is replaced</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.eval_data_frame"><code class="name flex">
 <span>def <span class="ident">eval_data_frame</span></span>(<span>self, ev_str, inplace=True, **kwds)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Evaluate a string describing operations on DataFrame columns</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>ev_str</code></strong> :&ensp;<code>str</code></dt>
-<dd>The expression string to evaluate. The string syntax is the one required in the
-pandas.DataFrame.eval() method.</dd>
-<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If the expression contains an assignment, whether to perform the operation inplace and
-mutate the existing DataFrame. Otherwise, a new DataFrame is returned.</dd>
-<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the pandas.DataFrame.eval method:</code></dt>
-<dd><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.eval.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.eval.html</a></dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code> or <code>None</code></dt>
-<dd>if inplace == True None is returned and the full dataframe is evaluated</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1338,17 +829,28 @@ mutate the existing DataFrame. Otherwise, a new DataFrame is returned.</dd>
     new_hndl._full_data_frame.eval(ev_str, inplace=True, **kwds)  # pylint: disable=W0212
     return new_hndl</code></pre>
 </details>
+<div class="desc"><p>Evaluate a string describing operations on DataFrame columns</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ev_str</code></strong> :&ensp;<code>str</code></dt>
+<dd>The expression string to evaluate. The string syntax is the one required in the
+pandas.DataFrame.eval() method.</dd>
+<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If the expression contains an assignment, whether to perform the operation inplace and
+mutate the existing DataFrame. Otherwise, a new DataFrame is returned.</dd>
+<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the pandas.DataFrame.eval method:</code></dt>
+<dd><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.eval.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.eval.html</a></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code> or <code>None</code></dt>
+<dd>if inplace == True None is returned and the full dataframe is evaluated</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_data_frame"><code class="name flex">
 <span>def <span class="ident">get_data_frame</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the pandas DataFrame stored in the TreeHandler</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
-<dd>DataFrame stored in the TreeHandler</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1364,41 +866,17 @@ mutate the existing DataFrame. Otherwise, a new DataFrame is returned.</dd>
     &#34;&#34;&#34;
     return self._full_data_frame</code></pre>
 </details>
+<div class="desc"><p>Get the pandas DataFrame stored in the TreeHandler</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>DataFrame stored in the TreeHandler</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_handler_from_large_file"><code class="name flex">
-<span>def <span class="ident">get_handler_from_large_file</span></span>(<span>self, file_name, tree_name, model_handler=None, preselection='', output_margin=True, max_workers=None)</span>
+<span>def <span class="ident">get_handler_from_large_file</span></span>(<span>self,<br>file_name,<br>tree_name,<br>model_handler=None,<br>preselection='',<br>output_margin=True,<br>max_workers=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Read a ROOT.TTree in different lazy chuncks. Chuncks are read sequentially or in parallel
-and eventually pre-selections or ML selections are applied. This allows to preserve the
-memory usage and speed-up the reading. Chuncks size is decided automatically</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>str</code></dt>
-<dd>Name of the input file where the data sit or list of input files</dd>
-<dt><strong><code>tree_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of the tree within the input file, must be the same for all files</dd>
-<dt><strong><code>model_handler</code></strong> :&ensp;<code><a title="hipe4ml" href="index.html">hipe4ml</a> ModelHandler</code></dt>
-<dd>Model handler to be applied as a preselection on the data contained in the original
-tree. A column named model_output is added to the tree_handler. In case of multi-classification
-a new column is added for each class with name: model_output_{i}</dd>
-<dt><strong><code>preselection</code></strong> :&ensp;<code>str</code></dt>
-<dd>String containing the cuts to be applied as preselection on the data contained in the original
-tree. The string syntax is the one required in the pandas.DataFrame.query() method.
-You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.
-You can apply ML based preselections like in the example below:
-- "model_output &gt; @score_cut" # binary classification
-- "model_output_0 &gt; @score_cut[0] and model_output_1 &lt;= @score_cut[1]" # multi-classification</dd>
-<dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Whether to predict the raw untransformed margin value. If False model
-probabilities are returned</dd>
-<dt><strong><code>max_workers</code></strong> :&ensp;<code>int</code></dt>
-<dd>Maximum number of workers employed to read the chuncks. If max_workers is None or not given,
-it will default to the number of processors on the machine, multiplied by 5. If max_workers==-1
-the multi-threading computation is turned off.
-More details in:
-<a href="https://docs.python.org/3/library/concurrent.futures.html">https://docs.python.org/3/library/concurrent.futures.html</a></dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1472,18 +950,41 @@ More details in:
     result = pd.concat(result)
     self._full_data_frame = result</code></pre>
 </details>
+<div class="desc"><p>Read a ROOT.TTree in different lazy chuncks. Chuncks are read sequentially or in parallel
+and eventually pre-selections or ML selections are applied. This allows to preserve the
+memory usage and speed-up the reading. Chuncks size is decided automatically</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>str</code></dt>
+<dd>Name of the input file where the data sit or list of input files</dd>
+<dt><strong><code>tree_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the tree within the input file, must be the same for all files</dd>
+<dt><strong><code>model_handler</code></strong> :&ensp;<code><a title="hipe4ml" href="index.html">hipe4ml</a> ModelHandler</code></dt>
+<dd>Model handler to be applied as a preselection on the data contained in the original
+tree. A column named model_output is added to the tree_handler. In case of multi-classification
+a new column is added for each class with name: model_output_{i}</dd>
+<dt><strong><code>preselection</code></strong> :&ensp;<code>str</code></dt>
+<dd>String containing the cuts to be applied as preselection on the data contained in the original
+tree. The string syntax is the one required in the pandas.DataFrame.query() method.
+You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.
+You can apply ML based preselections like in the example below:
+- "model_output &gt; @score_cut" # binary classification
+- "model_output_0 &gt; @score_cut[0] and model_output_1 &lt;= @score_cut[1]" # multi-classification</dd>
+<dt><strong><code>output_margin</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to predict the raw untransformed margin value. If False model
+probabilities are returned</dd>
+<dt><strong><code>max_workers</code></strong> :&ensp;<code>int</code></dt>
+<dd>Maximum number of workers employed to read the chuncks. If max_workers is None or not given,
+it will default to the number of processors on the machine, multiplied by 5. If max_workers==-1
+the multi-threading computation is turned off.
+More details in:
+<a href="https://docs.python.org/3/library/concurrent.futures.html">https://docs.python.org/3/library/concurrent.futures.html</a></dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_n_cand"><code class="name flex">
 <span>def <span class="ident">get_n_cand</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the number of candidates stored in the full DataFrame</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>int</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Number of candidates</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1499,17 +1000,18 @@ More details in:
     &#34;&#34;&#34;
     return len(self._full_data_frame)</code></pre>
 </details>
+<div class="desc"><p>Get the number of candidates stored in the full DataFrame</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Number of candidates</p></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_preselections"><code class="name flex">
 <span>def <span class="ident">get_preselections</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the preselections applied to the stored DataFrame</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
-<dd>String containing the cuts applied to the stored DataFrame</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1525,18 +1027,17 @@ More details in:
     &#34;&#34;&#34;
     return self._preselections</code></pre>
 </details>
+<div class="desc"><p>Get the preselections applied to the stored DataFrame</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
+<dd>String containing the cuts applied to the stored DataFrame</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_projection_binning"><code class="name flex">
 <span>def <span class="ident">get_projection_binning</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the bins used for slicing the DataFrame</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
-<dd>Each element of the list is a list containing the
-bin edges</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1553,17 +1054,18 @@ bin edges</dd>
     &#34;&#34;&#34;
     return self._projection_binning</code></pre>
 </details>
+<div class="desc"><p>Get the bins used for slicing the DataFrame</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
+<dd>Each element of the list is a list containing the
+bin edges</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_projection_variable"><code class="name flex">
 <span>def <span class="ident">get_projection_variable</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the name of the sliced variable</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
-<dd>Sliced variable</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1579,22 +1081,17 @@ bin edges</dd>
     &#34;&#34;&#34;
     return self._projection_variable</code></pre>
 </details>
+<div class="desc"><p>Get the name of the sliced variable</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
+<dd>Sliced variable</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_slice"><code class="name flex">
 <span>def <span class="ident">get_slice</span></span>(<span>self, n_bin)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the n-th slice of the original DataFrame</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>n_bin</code></strong> :&ensp;<code>int</code></dt>
-<dd>n-th element of _projection_binning list.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
-<dd>N-th Slice of the original DataFrame</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1615,19 +1112,22 @@ bin edges</dd>
     &#34;&#34;&#34;
     return self._sliced_df_list[n_bin]</code></pre>
 </details>
+<div class="desc"><p>Get the n-th slice of the original DataFrame</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n_bin</code></strong> :&ensp;<code>int</code></dt>
+<dd>n-th element of _projection_binning list.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>N-th Slice of the original DataFrame</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_sliced_df_list"><code class="name flex">
 <span>def <span class="ident">get_sliced_df_list</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get the list containing the slices of the orginal
-DataFrame</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
-<dd>List containing the slices of the orginal
-DataFrame</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1645,32 +1145,19 @@ DataFrame</dd>
     &#34;&#34;&#34;
     return self._sliced_df_list</code></pre>
 </details>
+<div class="desc"><p>Get the list containing the slices of the orginal
+DataFrame</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
+<dd>List containing the slices of the orginal
+DataFrame</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_subset"><code class="name flex">
 <span>def <span class="ident">get_subset</span></span>(<span>self, selections=None, frac=None, size=None, rndm_state=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns a TreeHandler containing a subset of the data</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>selection</code></strong> :&ensp;<code>str</code></dt>
-<dd>String containing the cuts to be applied as preselection on the data contained in the original
-tree. The string syntax is the one required in the pandas.DataFrame.query() method.
-You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.</dd>
-<dt><strong><code>frac</code></strong> :&ensp;<code>float</code></dt>
-<dd>Fraction of candidates to return.</dd>
-<dt><strong><code>size</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of candidates to return. Cannot be used with frac.</dd>
-<dt><strong><code>rndm_state</code></strong> :&ensp;<code>int</code> or <code>numpy.random.RandomState</code>, optional</dt>
-<dd>Seed for the random number generator (if int), or numpy RandomState object, passed to the
-pandas.DataFrame.sample() method:
-<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html</a></dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code></dt>
-<dd>TreeHandler containing a subset of the current data</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1712,18 +1199,32 @@ pandas.DataFrame.sample() method:
         subset.shuffle_data_frame(frac=frac, size=size, inplace=True, random_state=rndm_state)
     return subset</code></pre>
 </details>
+<div class="desc"><p>Returns a TreeHandler containing a subset of the data</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>selection</code></strong> :&ensp;<code>str</code></dt>
+<dd>String containing the cuts to be applied as preselection on the data contained in the original
+tree. The string syntax is the one required in the pandas.DataFrame.query() method.
+You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.</dd>
+<dt><strong><code>frac</code></strong> :&ensp;<code>float</code></dt>
+<dd>Fraction of candidates to return.</dd>
+<dt><strong><code>size</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of candidates to return. Cannot be used with frac.</dd>
+<dt><strong><code>rndm_state</code></strong> :&ensp;<code>int</code> or <code>numpy.random.RandomState</code>, optional</dt>
+<dd>Seed for the random number generator (if int), or numpy RandomState object, passed to the
+pandas.DataFrame.sample() method:
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html</a></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code></dt>
+<dd>TreeHandler containing a subset of the current data</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.get_var_names"><code class="name flex">
 <span>def <span class="ident">get_var_names</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get a list containing the name of the variables</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<p>Names of the variables</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1739,13 +1240,18 @@ pandas.DataFrame.sample() method:
     &#34;&#34;&#34;
     return list(self._full_data_frame.columns)</code></pre>
 </details>
+<div class="desc"><p>Get a list containing the name of the variables</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code>list</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>Names of the variables</p></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.print_summary"><code class="name flex">
 <span>def <span class="ident">print_summary</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Print information about the TreeHandler object and its
-data members</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1762,17 +1268,13 @@ data members</p></div>
     print(&#34;Sliced variable: &#34;, self._projection_variable)
     print(&#34;Slices binning: &#34;, self._projection_binning)</code></pre>
 </details>
+<div class="desc"><p>Print information about the TreeHandler object and its
+data members</p></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.set_data_frame"><code class="name flex">
 <span>def <span class="ident">set_data_frame</span></span>(<span>self, df_orig)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set the pandas DataFrame in the TreeHandler</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>df</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
-<dd>DataFrame stored in the TreeHandler</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1788,30 +1290,17 @@ data members</p></div>
     &#34;&#34;&#34;
     self._full_data_frame = df_orig</code></pre>
 </details>
+<div class="desc"><p>Set the pandas DataFrame in the TreeHandler</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>DataFrame stored in the TreeHandler</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.shuffle_data_frame"><code class="name flex">
 <span>def <span class="ident">shuffle_data_frame</span></span>(<span>self, size=None, frac=None, inplace=True, **kwds)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Extract a random sample from the DataFrame</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>size</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of candidates to return. Cannot be used with frac. Default = 1 if
-frac = None.</dd>
-<dt><strong><code>frac</code></strong> :&ensp;<code>float</code></dt>
-<dd>Fraction of candidates to return. Cannot be used with size.</dd>
-<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True the shuffled dataframe replaces the initial dataframe. Otherwise return a copy
-of the shuffled df</dd>
-<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the pandas.DataFrame.sample method:</code></dt>
-<dd><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html</a></dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code> or <code>None</code></dt>
-<dd>If inplace == True None is returned and the full DataFrame is replaced</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1849,25 +1338,30 @@ of the shuffled df</dd>
     new_hndl._full_data_frame = self._full_data_frame.sample(size, frac, **kwds)  # pylint: disable=W0212
     return new_hndl</code></pre>
 </details>
+<div class="desc"><p>Extract a random sample from the DataFrame</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>size</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of candidates to return. Cannot be used with frac. Default = 1 if
+frac = None.</dd>
+<dt><strong><code>frac</code></strong> :&ensp;<code>float</code></dt>
+<dd>Fraction of candidates to return. Cannot be used with size.</dd>
+<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True the shuffled dataframe replaces the initial dataframe. Otherwise return a copy
+of the shuffled df</dd>
+<dt><strong><code>**kwds</code></strong> :&ensp;<code>extra arguments are passed on to the pandas.DataFrame.sample method:</code></dt>
+<dd><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html">https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html</a></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>out</code></strong> :&ensp;<code><a title="hipe4ml.tree_handler.TreeHandler" href="#hipe4ml.tree_handler.TreeHandler">TreeHandler</a></code> or <code>None</code></dt>
+<dd>If inplace == True None is returned and the full DataFrame is replaced</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.slice_data_frame"><code class="name flex">
 <span>def <span class="ident">slice_data_frame</span></span>(<span>self, projection_variable, projection_binning, delete_original_df=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a list containing slices of the orginal DataFrame.
-The original DataFrame is splitted in N sub-DataFrames following
-the binning(projection_binning) of a given variable(projected_variable)</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>projection_variable</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of the variable that will be sliced in the analysis</dd>
-<dt><strong><code>projection_binning</code></strong> :&ensp;<code>list</code></dt>
-<dd>Binning of the sliced variable should be given as a list of
-[min, max) values for each bin</dd>
-<dt><strong><code>delete_original_df</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True delete the original DataFrame. Only the
-the slice array will be accessible in this case</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1904,22 +1398,25 @@ the slice array will be accessible in this case</dd>
     if delete_original_df:
         self._full_data_frame = None</code></pre>
 </details>
+<div class="desc"><p>Create a list containing slices of the orginal DataFrame.
+The original DataFrame is splitted in N sub-DataFrames following
+the binning(projection_binning) of a given variable(projected_variable)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>projection_variable</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the variable that will be sliced in the analysis</dd>
+<dt><strong><code>projection_binning</code></strong> :&ensp;<code>list</code></dt>
+<dd>Binning of the sliced variable should be given as a list of
+[min, max) values for each bin</dd>
+<dt><strong><code>delete_original_df</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True delete the original DataFrame. Only the
+the slice array will be accessible in this case</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.write_df_to_parquet_files"><code class="name flex">
 <span>def <span class="ident">write_df_to_parquet_files</span></span>(<span>self, base_file_name='TreeDataFrame', path='./', save_slices=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Write the pandas dataframe to parquet files</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>base_file_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>Base filename used to save the parquet files</dd>
-<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
-<dd>Base path of the output files</dd>
-<dt><strong><code>save_slices</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True and the slices are available, single parquet files for each
-bins are created</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1955,22 +1452,22 @@ bins are created</dd>
         else:
             print(&#34;\nWarning: slices not available&#34;)</code></pre>
 </details>
+<div class="desc"><p>Write the pandas dataframe to parquet files</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>base_file_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Base filename used to save the parquet files</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Base path of the output files</dd>
+<dt><strong><code>save_slices</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True and the slices are available, single parquet files for each
+bins are created</dd>
+</dl></div>
 </dd>
 <dt id="hipe4ml.tree_handler.TreeHandler.write_df_to_root_files"><code class="name flex">
 <span>def <span class="ident">write_df_to_root_files</span></span>(<span>self, base_file_name='TreeDataFrame', tree_name='df', path='./', save_slices=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Write the pandas dataframe to root files</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>base_file_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>Base filename used to save the root files</dd>
-<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
-<dd>Base path of the output files</dd>
-<dt><strong><code>save_slices</code></strong> :&ensp;<code>bool</code></dt>
-<dd>If True and the slices are available, single root files for each
-bins are created</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2009,6 +1506,17 @@ bins are created</dd>
         else:
             print(&#34;\nWarning: slices not available&#34;)</code></pre>
 </details>
+<div class="desc"><p>Write the pandas dataframe to root files</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>base_file_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Base filename used to save the root files</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Base path of the output files</dd>
+<dt><strong><code>save_slices</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True and the slices are available, single root files for each
+bins are created</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -2016,7 +1524,6 @@ bins are created</dd>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -2058,7 +1565,7 @@ bins are created</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>
